@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H5题库管理系统 - 用户管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#0FC6C2',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        info: '#86909C',
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .transition-bg {
+                transition: background-color 0.2s ease;
+            }
+            .transition-transform {
+                transition: transform 0.2s ease;
+            }
+            .hover-scale {
+                transition: transform 0.2s ease;
+            }
+            .hover-scale:hover {
+                transform: scale(1.02);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm z-10">
+        <div class="flex items-center justify-between px-6 py-3">
+            <div class="flex items-center space-x-4">
+                <button id="sidebar-toggle" class="p-2 rounded-md hover:bg-gray-100 transition-colors">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="flex items-center">
+                    <i class="fa fa-graduation-cap text-primary text-2xl mr-2"></i>
+                    <h1 class="text-xl font-bold text-primary">H5题库管理系统</h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button class="p-2 rounded-full hover:bg-gray-100 relative transition-colors">
+                    <i class="fa fa-bell-o text-gray-600"></i>
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
+                </button>
+                
+                <div class="relative group">
+                    <button class="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors">
+                        <img src="https://picsum.photos/32/32" alt="用户头像" class="w-8 h-8 rounded-full object-cover border-2 border-primary">
+                        <span class="text-sm font-medium hidden md:block">管理员</span>
+                        <i class="fa fa-angle-down text-gray-600 hidden md:block"></i>
+                    </button>
+                    
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right group-hover:translate-y-0 translate-y-2">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-user-o mr-2"></i>个人信息
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-cog mr-2"></i>账号设置
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-danger hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-sign-out mr-2"></i>退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 侧边栏 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md z-10 flex-shrink-0 transition-all duration-300 transform translate-x-0 lg:translate-x-0 overflow-y-auto h-[calc(100vh-64px)]">
+            <nav class="py-4">
+                <div class="px-6 mb-4">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">主导航</p>
+                </div>
+                
+                <ul class="space-y-1">
+                    <li>
+                        <a href="2-数据概览.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-dashboard w-5 h-5 mr-3"></i>
+                            <span>数据概览</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="3-角色管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-users w-5 h-5 mr-3"></i>
+                            <span>角色管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="4-用户管理.html" class="nav-link flex items-center px-6 py-3 text-primary bg-primary/5 hover:bg-primary/10 transition-colors">
+                            <i class="fa fa-user-circle-o w-5 h-5 mr-3"></i>
+                            <span>用户管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="5-学生管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-graduation-cap w-5 h-5 mr-3"></i>
+                            <span>学生管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="6-试卷管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-file-text-o w-5 h-5 mr-3"></i>
+                            <span>试卷管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="7-题库管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-question-circle-o w-5 h-5 mr-3"></i>
+                            <span>题库管理</span>
+                        </a>
+                        <a href="8-用户反馈.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-primary/10 transition-colors">
+                            <i class="fa fa-file-text-o w-5 h-5 mr-3"></i>
+                            <span>用户反馈</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="px-6 my-6">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">系统设置</p>
+                </div>
+                
+                <ul class="space-y-1">
+                    <li>
+                        <a href="9-系统设置.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-cog w-5 h-5 mr-3"></i>
+                            <span>系统设置</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="10-操作日志.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-history w-5 h-5 mr-3"></i>
+                            <span>操作日志</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
+            <!-- 页面标题 -->
+            <div class="mb-6">
+                <h2 id="page-title" class="text-2xl font-bold text-gray-800">用户管理</h2>
+                <p id="page-description" class="text-gray-500 mt-1">管理系统用户信息</p>
+            </div>
+            
+            <!-- 内容区域 -->
+            <div id="content-area">
+                <!-- 用户管理页面 -->
+                <div id="user-management-page" class="space-y-6">
+                    <!-- 用户筛选 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="font-semibold text-lg mb-4">筛选条件</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="relative">
+                                <label for="user-id" class="block text-sm font-medium text-gray-700 mb-1">用户ID</label>
+                                <input type="text" id="user-id" placeholder="请输入用户ID" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                            </div>
+                            <div class="relative">
+                                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">手机号</label>
+                                <input type="text" id="phone" placeholder="请输入手机号" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                            </div>
+                            <div class="relative">
+                                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                                <input type="text" id="username" placeholder="请输入用户名" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-end space-x-3">
+                            <button id="reset-filter" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                                重置
+                            </button>
+                            <button id="search-user" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center">
+                                <i class="fa fa-search mr-2"></i> 搜索
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 用户列表 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                            <h3 class="font-semibold text-lg">用户列表</h3>
+                            <div class="mt-4 md:mt-0">
+                                <button id="add-user-btn" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center">
+                                    <i class="fa fa-plus mr-2"></i> 新增用户
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用户名称</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">手机号</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">注册时间</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">添加学生数量</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">最近登录时间</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                                    <i class="fa fa-user-o text-primary"></i>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <div class="text-sm font-medium text-gray-900">张三</div>
+                                                    <div class="text-xs text-gray-500">zhangsan</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            13800138000
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2025-01-15 09:30:21
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            246
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2025-06-15 14:20:15
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">启用</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-primary hover:text-primary/80 mr-3" data-user-id="1">
+                                                <i class="fa fa-edit"></i> 编辑
+                                            </button>
+                                            <button class="text-danger hover:text-danger/80" data-user-id="1">
+                                                <i class="fa fa-ban"></i> 禁用
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-8 w-8 bg-secondary/10 rounded-full flex items-center justify-center">
+                                                    <i class="fa fa-user-o text-secondary"></i>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <div class="text-sm font-medium text-gray-900">李四</div>
+                                                    <div class="text-xs text-gray-500">lisi</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            13900139000
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2025-02-20 14:15:36
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            189
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2025-06-16 08:45:22
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">启用</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-primary hover:text-primary/80 mr-3" data-user-id="2">
+                                                <i class="fa fa-edit"></i> 编辑
+                                            </button>
+                                            <button class="text-danger hover:text-danger/80" data-user-id="2">
+                                                <i class="fa fa-ban"></i> 禁用
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-8 w-8 bg-warning/10 rounded-full flex items-center justify-center">
+                                                    <i class="fa fa-user-o text-warning"></i>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <div class="text-sm font-medium text-gray-900">王五</div>
+                                                    <div class="text-xs text-gray-500">wangwu</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            13700137000
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2025-03-10 11:22:45
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            312
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2025-06-14 16:30:10
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">禁用</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-primary hover:text-primary/80 mr-3" data-user-id="3">
+                                                <i class="fa fa-edit"></i> 编辑
+                                            </button>
+                                            <button class="text-success hover:text-success/80" data-user-id="3">
+                                                <i class="fa fa-check-circle"></i> 启用
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 分页 -->
+                        <div class="flex items-center justify-between px-4 py-3 sm:px-6 mt-4">
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        显示第 <span class="font-medium">1</span> 到 <span class="font-medium">3</span> 条，共 <span class="font-medium">3</span> 条记录
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">上一页</span>
+                                            <i class="fa fa-chevron-left"></i>
+                                        </a>
+                                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary text-sm font-medium text-white">
+                                            1
+                                        </a>
+                                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">下一页</span>
+                                            <i class="fa fa-chevron-right"></i>
+                                        </a>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 侧边栏切换
+        document.addEventListener('DOMContentLoaded', function() {
+            // 侧边栏切换
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            sidebarToggle.addEventListener('click', function() {
+                if (window.innerWidth < 1024) {
+                    sidebar.classList.toggle('-translate-x-full');
+                }
+            });
+            
+            // 窗口大小变化时调整侧边栏
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) {
+                    sidebar.classList.remove('-translate-x-full');
+                }
+            });
+            
+            // 导航链接高亮
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        
+        if (href.startsWith('#')) {
+            // 是锚点链接，执行 SPA 内部页面切换
+            e.preventDefault();
+            
+            const pageId = href.substring(1); // 去除 '#' 号
+            
+            // 移除其他导航项高亮
+            navLinks.forEach(l => {
+                l.classList.remove('text-primary', 'bg-primary/5');
+                l.classList.add('text-gray-600');
+            });
+            
+            // 添加当前高亮样式
+            this.classList.add('text-primary', 'bg-primary/5');
+            this.classList.remove('text-gray-600');
+            
+            // 更新页面标题与描述
+            updatePageInfo(pageId);
+            // 显示指定页面内容
+            showPage(pageId);
+
+            // 在移动设备上关闭侧边栏
+            if (window.innerWidth < 1024) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        } else {
+            // 是外部 HTML 页面，允许浏览器自然跳转
+            window.location.href = href;
+        }
+    });
+});
+            
+            // 更新页面标题和描述
+            function updatePageInfo(pageId) {
+                const pageTitles = {
+                    'dashboard': '数据概览',
+                    'role-management': '角色管理',
+                    'user-management': '用户管理',
+                    'student-management': '学生管理',
+                    'paper-management': '试卷管理',
+                    'question-management': '题库管理',
+                    'system-settings': '系统设置',
+                    'logs': '操作日志'
+                };
+                
+                const pageDescriptions = {
+                    'dashboard': '查看系统关键指标和数据统计',
+                    'role-management': '管理系统角色和权限',
+                    'user-management': '管理系统用户信息',
+                    'student-management': '管理系统学生',
+                    'paper-management': '管理系统试卷',
+                    'question-management': '管理系统题库',
+                    'system-settings': '系统设置和配置',
+                    'logs': '系统操作日志'
+                };
+                
+                document.getElementById('page-title').textContent = pageTitles[pageId] || '数据概览';
+                document.getElementById('page-description').textContent = pageDescriptions[pageId] || '查看系统关键指标和数据统计';
+            }
+            
+            // 显示对应页面内容
+            function showPage(pageId) {
+                const pages = document.querySelectorAll('[id$="-page"]');
+                pages.forEach(page => {
+                    page.classList.add('hidden');
+                });
+                
+                const targetPage = document.getElementById(`${pageId}-page`);
+                if (targetPage) {
+                    targetPage.classList.remove('hidden');
+                }
+            };
+            
+            // 退出登录
+            document.getElementById('logout-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('确定要退出登录吗？')) {
+                    // 这里可以添加退出登录的AJAX请求
+                    alert('已成功退出登录！');
+                    // 在实际应用中，这里应该跳转到登录页面
+                    // window.location.href = '/login';
+                }
+            });
+            
+            // 重置筛选条件
+            document.getElementById('reset-filter').addEventListener('click', function() {
+                document.getElementById('user-id').value = '';
+                document.getElementById('phone').value = '';
+                document.getElementById('username').value = '';
+            });
+            
+            // 搜索用户
+            document.getElementById('search-user').addEventListener('click', function() {
+                const userId = document.getElementById('user-id').value;
+                const phone = document.getElementById('phone').value;
+                const username = document.getElementById('username').value;
+                
+                // 在实际应用中，这里应该发送AJAX请求到服务器进行搜索
+                console.log('搜索用户:', { userId, phone, username });
+                alert('搜索功能将在未来版本中实现。');
+            });
+            
+            // 编辑用户
+            document.querySelectorAll('button[data-user-id]').forEach(button => {
+                if (button.textContent.includes('编辑')) {
+                    button.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-user-id');
+                        const username = this.closest('tr').querySelector('div.text-sm.font-medium').textContent;
+                        
+                        alert(`编辑用户"${username}"(ID: ${userId})功能将在未来版本中实现。`);
+                        // 在实际应用中，这里应该弹出编辑用户的模态框
+                    });
+                }
+            });
+            
+            // 禁用用户
+            document.querySelectorAll('button[data-user-id]').forEach(button => {
+                if (button.textContent.includes('禁用')) {
+                    button.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-user-id');
+                        const username = this.closest('tr').querySelector('div.text-sm.font-medium').textContent;
+                        
+                        if (confirm(`确定要禁用用户"${username}"吗？`)) {
+                            // 在实际应用中，这里应该发送AJAX请求到服务器禁用用户
+                            console.log('禁用用户:', userId);
+                            alert(`用户"${username}"已禁用！`);
+                            // 刷新用户列表
+                        }
+                    });
+                }
+            });
+            
+            // 启用用户
+            document.querySelectorAll('button[data-user-id]').forEach(button => {
+                if (button.textContent.includes('启用')) {
+                    button.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-user-id');
+                        const username = this.closest('tr').querySelector('div.text-sm.font-medium').textContent;
+                        
+                        if (confirm(`确定要启用用户"${username}"吗？`)) {
+                            // 在实际应用中，这里应该发送AJAX请求到服务器启用用户
+                            console.log('启用用户:', userId);
+                            alert(`用户"${username}"已启用！`);
+                            // 刷新用户列表
+                        }
+                    });
+                }
+            });
+            
+            // 新增用户
+            document.getElementById('add-user-btn').addEventListener('click', function() {
+                alert('新增用户功能将在未来版本中实现。');
+                // 在实际应用中，这里应该弹出新增用户的模态框
+            });
+        });
+    </script>
+</body>
+</html>
+    

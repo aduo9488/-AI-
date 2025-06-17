@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H5题库管理系统 - 登录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#0FC6C2',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        info: '#86909C',
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .transition-bg {
+                transition: background-color 0.2s ease;
+            }
+            .transition-transform {
+                transition: transform 0.2s ease;
+            }
+            .hover-scale {
+                transition: transform 0.2s ease;
+            }
+            .hover-scale:hover {
+                transform: scale(1.02);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md p-8 bg-white rounded-xl shadow-xl transform transition-all duration-300 hover:shadow-2xl">
+        <div class="text-center mb-8">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-primary mb-2">H5题库管理系统</h2>
+            <p class="text-gray-500">请登录后使用系统</p>
+        </div>
+        
+        <form id="login-form" class="space-y-5">
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    <i class="fa fa-user"></i>
+                </span>
+                <input type="text" id="username" class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" placeholder="请输入账号" required>
+            </div>
+            
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    <i class="fa fa-lock"></i>
+                </span>
+                <input type="password" id="password" class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" placeholder="请输入密码" required>
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <input id="remember-me" type="checkbox" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                    <label for="remember-me" class="ml-2 text-sm text-gray-600">记住密码</label>
+                </div>
+                <a href="#" class="text-sm text-primary hover:text-primary/80 transition-colors">忘记密码?</a>
+            </div>
+            
+            <button type="submit" class="w-full py-3 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors duration-300 transform hover:-translate-y-1 hover:shadow-lg flex items-center justify-center">
+                <span>登录系统</span>
+                <i class="fa fa-arrow-right ml-2"></i>
+            </button>
+        </form>
+        
+        <div class="mt-8 text-center text-gray-500 text-sm">
+            <p>© 2025 H5题库管理系统 版权所有</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取登录表单元素
+        const loginForm = document.getElementById('login-form');
+        
+        // 为登录表单添加提交事件处理程序
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // 阻止表单默认提交行为
+            
+            // 获取输入的用户名和密码
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // 简单验证（实际应用中应该有更复杂的验证）
+            if (!username || !password) {
+                alert('请输入用户名和密码');
+                return;
+            }
+            
+            // 模拟登录过程
+            console.log('正在登录...');
+            console.log(`用户名: ${username}`);
+            console.log(`密码: ${password}`);
+            
+            // 这里可以添加AJAX请求，将登录信息发送到服务器
+            // 模拟登录成功
+            setTimeout(() => {
+                alert('登录成功！正在进入系统...');
+                
+                // 在实际应用中，这里应该跳转到主页面
+                window.location.href = '2-数据概览.html';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

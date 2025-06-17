@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H5题库管理系统 - 题库管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#0FC6C2',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        info: '#86909C',
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .transition-bg {
+                transition: background-color 0.2s ease;
+            }
+            .transition-transform {
+                transition: transform 0.2s ease;
+            }
+            .hover-scale {
+                transition: transform 0.2s ease;
+            }
+            .hover-scale:hover {
+                transform: scale(1.02);
+            }
+            .status-badge {
+                @apply px-2 py-1 text-xs font-medium rounded-full;
+            }
+            .difficulty-easy {
+                @apply bg-green-100 text-green-800;
+            }
+            .difficulty-medium {
+                @apply bg-blue-100 text-blue-800;
+            }
+            .difficulty-hard {
+                @apply bg-red-100 text-red-800;
+            }
+            .question-type {
+                @apply px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800;
+            }
+        }
+    </style>
+</head>
+<script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取DOM元素
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const addQuestionBtn = document.getElementById('add-question-btn');
+        const addQuestionModal = document.getElementById('add-question-modal');
+        const closeAddModal = document.getElementById('close-add-modal');
+        
+        // 侧边栏切换功能
+        if (sidebarToggle && sidebar) {
+            sidebarToggle.addEventListener('click', function() {
+                if (sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.remove('-translate-x-full');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            });
+        }
+        
+        // 新增题目按钮点击事件
+        if (addQuestionBtn && addQuestionModal) {
+            addQuestionBtn.addEventListener('click', function() {
+                addQuestionModal.classList.remove('hidden');
+            });
+        }
+        
+        // 关闭新增题目模态框
+        if (closeAddModal && addQuestionModal) {
+            closeAddModal.addEventListener('click', function() {
+                addQuestionModal.classList.add('hidden');
+            });
+        }
+        
+        // 点击模态框外部关闭模态框
+        if (addQuestionModal) {
+            addQuestionModal.addEventListener('click', function(e) {
+                if (e.target === addQuestionModal) {
+                    addQuestionModal.classList.add('hidden');
+                }
+            });
+        }
+        
+        // 处理题库筛选重置按钮
+        const resetFilterBtn = document.getElementById('reset-question-filter');
+        if (resetFilterBtn) {
+            resetFilterBtn.addEventListener('click', function() {
+                const filters = document.querySelectorAll('#question-management-page input, #question-management-page select');
+                filters.forEach(filter => {
+                    if (filter.type === 'checkbox' || filter.type === 'radio') {
+                        filter.checked = false;
+                    } else {
+                        filter.value = '';
+                    }
+                });
+            });
+        }
+        
+        // 处理全选和取消全选
+        const headerCheckbox = document.getElementById('header-checkbox');
+        const questionCheckboxes = document.querySelectorAll('.question-checkbox');
+        const selectedCount = document.getElementById('selected-count');
+// 移除重复声明,使用已存在的exportSelectedBtn变量
+        
+        if (headerCheckbox && questionCheckboxes.length > 0) {
+            headerCheckbox.addEventListener('change', function() {
+                questionCheckboxes.forEach(checkbox => {
+                    checkbox.checked = headerCheckbox.checked;
+                });
+                updateSelectedCount();
+            });
+            
+            questionCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectedCount);
+            });
+        }
+        
+        // 更新选中题目数量
+        function updateSelectedCount() {
+            const checkedCount = document.querySelectorAll('.question-checkbox:checked').length;
+            if (selectedCount) {
+                selectedCount.textContent = checkedCount;
+            }
+            
+            if (exportSelectedBtn) {
+                exportSelectedBtn.disabled = checkedCount === 0;
+            }
+        }
+        
+        // 全选和取消全选按钮
+        const selectAllBtn = document.getElementById('select-all');
+        const clearSelectionBtn = document.getElementById('clear-selection');
+        
+        if (selectAllBtn && clearSelectionBtn) {
+            selectAllBtn.addEventListener('click', function() {
+                if (questionCheckboxes.length > 0) {
+                    questionCheckboxes.forEach(checkbox => {
+                        checkbox.checked = true;
+                    });
+                    headerCheckbox.checked = true;
+                    updateSelectedCount();
+                }
+            });
+            
+            clearSelectionBtn.addEventListener('click', function() {
+                if (questionCheckboxes.length > 0) {
+                    questionCheckboxes.forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                    headerCheckbox.checked = false;
+                    updateSelectedCount();
+                }
+            });
+        }
+        
+        // 处理查看题目按钮
+        const viewQuestionBtns = document.querySelectorAll('.view-question');
+        const viewQuestionModal = document.getElementById('view-question-modal');
+        const viewQuestionContent = document.getElementById('view-question-content');
+        const closeViewModal = document.getElementById('close-view-modal');
+        const closeViewBtn = document.getElementById('close-view-btn');
+        
+        if (viewQuestionBtns.length > 0 && viewQuestionModal && viewQuestionContent) {
+            viewQuestionBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const questionId = this.getAttribute('data-question-id');
+                    loadQuestionDetails(questionId, 'view');
+                    viewQuestionModal.classList.remove('hidden');
+                });
+            });
+        }
+        
+        if (closeViewModal && viewQuestionModal) {
+            closeViewModal.addEventListener('click', function() {
+                viewQuestionModal.classList.add('hidden');
+            });
+        }
+        
+        if (closeViewBtn && viewQuestionModal) {
+            closeViewBtn.addEventListener('click', function() {
+                viewQuestionModal.classList.add('hidden');
+            });
+        }
+        
+        // 处理修改题目按钮
+        const editQuestionBtns = document.querySelectorAll('.edit-question');
+        const editQuestionModal = document.getElementById('edit-question-modal');
+        const editQuestionContent = document.getElementById('edit-question-content');
+        const closeEditModal = document.getElementById('close-edit-modal');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        
+        if (editQuestionBtns.length > 0 && editQuestionModal && editQuestionContent) {
+            editQuestionBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const questionId = this.getAttribute('data-question-id');
+                    loadQuestionDetails(questionId, 'edit');
+                    editQuestionModal.classList.remove('hidden');
+                });
+            });
+        }
+        
+        if (closeEditModal && editQuestionModal) {
+            closeEditModal.addEventListener('click', function() {
+                editQuestionModal.classList.add('hidden');
+            });
+        }
+        
+        if (cancelEditBtn && editQuestionModal) {
+            cancelEditBtn.addEventListener('click', function() {
+                editQuestionModal.classList.add('hidden');
+            });
+        }
+        
+        // 加载题目详情（模拟）
+        function loadQuestionDetails(questionId, mode) {
+            // 这里应该从服务器获取题目详情
+            // 现在使用模拟数据
+            const questions = {
+                '1': {
+                    id: 'QUES001',
+                    textbook: '人教版',
+                    grade: '三年级',
+                    subject: '数学',
+                    type: '单选题',
+                    difficulty: '简单',
+                    content: '1. 5 + 7 = ?',
+                    options: [
+                        { id: 'A', text: '10' },
+                        { id: 'B', text: '11' },
+                        { id: 'C', text: '12' },
+                        { id: 'D', text: '13' }
+                    ],
+                    answer: 'C',
+                    explanation: '5 + 7 = 12，所以正确答案是C。'
+                },
+                '2': {
+                    id: 'QUES002',
+                    textbook: '人教版',
+                    grade: '六年级',
+                    subject: '语文',
+                    type: '填空题',
+                    difficulty: '中等',
+                    content: '盼望着，盼望着，东风来了，春天的脚步近了。这句话的作者是谁？',
+                    answer: '朱自清',
+                    explanation: '这句话出自朱自清的《春》。'
+                },
+                // 其他题目数据...
+            };
+            
+            const question = questions[questionId] || { id: questionId };
+            
+            if (mode === 'view') {
+                // 填充查看题目模态框
+                if (viewQuestionContent) {
+                    viewQuestionContent.innerHTML = generateViewQuestionHTML(question);
+                }
+            } else if (mode === 'edit') {
+                // 填充修改题目模态框
+                if (editQuestionContent) {
+                    editQuestionContent.innerHTML = generateEditQuestionHTML(question);
+                }
+            }
+        }
+        
+        // 生成查看题目HTML
+        function generateViewQuestionHTML(question) {
+            let html = `
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500">题目ID</p>
+                            <p class="font-medium">${question.id}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">模糊搜索</p>
+                            <p class="font-medium">${question.id}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">教材</p>
+                            <p class="font-medium">${question.textbook || '-'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">年级</p>
+                            <p class="font-medium">${question.grade || '-'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">学科</p>
+                            <p class="font-medium">${question.subject || '-'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">题型</p>
+                            <p class="font-medium">${question.type || '-'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">难易程度</p>
+                            <p class="font-medium">${question.difficulty || '-'}</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p class="text-sm text-gray-500 mb-2">题干</p>
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <p>${question.content || '-'}</p>
+                        </div>
+                    </div>
+            `;
+            
+            // 添加选项（如果有）
+            if (question.options && question.options.length > 0) {
+                html += `
+                    <div>
+                        <p class="text-sm text-gray-500 mb-2">选项</p>
+                        <div class="space-y-2">
+                `;
+                
+                question.options.forEach(option => {
+                    html += `
+                        <div class="flex items-start">
+                            <span class="mr-2 font-medium">${option.id}.</span>
+                            <p>${option.text}</p>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 添加答案
+            html += `
+                <div>
+                    <p class="text-sm text-gray-500 mb-2">答案</p>
+                    <div class="p-4 bg-green-50 rounded-lg">
+                        <p class="font-medium">${question.answer || '-'}</p>
+                    </div>
+                </div>
+            `;
+            
+            // 添加解析（如果有）
+            if (question.explanation) {
+                html += `
+                    <div>
+                        <p class="text-sm text-gray-500 mb-2">解析</p>
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <p>${question.explanation}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += `
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        // 生成修改题目HTML（简化版）
+        function generateEditQuestionHTML(question) {
+            // 这里应该根据题目类型生成不同的表单
+            // 简化版本，只显示基本信息
+            let html = `
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">题目ID</label>
+                            <input type="text" value="${question.id || ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" disabled>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">模糊搜索</label>
+                            <input type="text" value="${question.id || ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" disabled>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">教材</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                                <option value="">请选择教材</option>
+                                <option value="人教版" ${question.textbook === '人教版' ? 'selected' : ''}>人教版</option>
+                                <option value="苏教版" ${question.textbook === '苏教版' ? 'selected' : ''}>苏教版</option>
+                                <option value="北师大版" ${question.textbook === '北师大版' ? 'selected' : ''}>北师大版</option>
+                                <option value="沪教版" ${question.textbook === '沪教版' ? 'selected' : ''}>沪教版</option>
+                                <option value="鲁教版" ${question.textbook === '鲁教版' ? 'selected' : ''}>鲁教版</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">年级</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                                <option value="">请选择年级</option>
+                                <option value="一年级" ${question.grade === '一年级' ? 'selected' : ''}>一年级</option>
+                                <option value="二年级" ${question.grade === '二年级' ? 'selected' : ''}>二年级</option>
+                                <option value="三年级" ${question.grade === '三年级' ? 'selected' : ''}>三年级</option>
+                                <option value="四年级" ${question.grade === '四年级' ? 'selected' : ''}>四年级</option>
+                                <option value="五年级" ${question.grade === '五年级' ? 'selected' : ''}>五年级</option>
+                                <option value="六年级" ${question.grade === '六年级' ? 'selected' : ''}>六年级</option>
+                                <option value="初一" ${question.grade === '初一' ? 'selected' : ''}>初一</option>
+                                <option value="初二" ${question.grade === '初二' ? 'selected' : ''}>初二</option>
+                                <option value="初三" ${question.grade === '初三' ? 'selected' : ''}>初三</option>
+                                <option value="高一" ${question.grade === '高一' ? 'selected' : ''}>高一</option>
+                                <option value="高二" ${question.grade === '高二' ? 'selected' : ''}>高二</option>
+                                <option value="高三" ${question.grade === '高三' ? 'selected' : ''}>高三</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">学科</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                                <option value="">请选择学科</option>
+                                <option value="数学" ${question.subject === '数学' ? 'selected' : ''}>数学</option>
+                                <option value="语文" ${question.subject === '语文' ? 'selected' : ''}>语文</option>
+                                <option value="英语" ${question.subject === '英语' ? 'selected' : ''}>英语</option>
+                                <option value="物理" ${question.subject === '物理' ? 'selected' : ''}>物理</option>
+                                <option value="化学" ${question.subject === '化学' ? 'selected' : ''}>化学</option>
+                                <option value="生物" ${question.subject === '生物' ? 'selected' : ''}>生物</option>
+                                <option value="历史" ${question.subject === '历史' ? 'selected' : ''}>历史</option>
+                                <option value="地理" ${question.subject === '地理' ? 'selected' : ''}>地理</option>
+                                <option value="政治" ${question.subject === '政治' ? 'selected' : ''}>政治</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">题型</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                                <option value="">请选择题型</option>
+                                <option value="单选题" ${question.type === '单选题' ? 'selected' : ''}>单选题</option>
+                                <option value="多选题" ${question.type === '多选题' ? 'selected' : ''}>多选题</option>
+                                <option value="判断题" ${question.type === '判断题' ? 'selected' : ''}>判断题</option>
+                                <option value="填空题" ${question.type === '填空题' ? 'selected' : ''}>填空题</option>
+                                <option value="解答题" ${question.type === '解答题' ? 'selected' : ''}>解答题</option>
+                                <option value="应用题" ${question.type === '应用题' ? 'selected' : ''}>应用题</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">难易程度</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                                <option value="">请选择难易程度</option>
+                                <option value="简单" ${question.difficulty === '简单' ? 'selected' : ''}>简单</option>
+                                <option value="中等" ${question.difficulty === '中等' ? 'selected' : ''}>中等</option>
+                                <option value="困难" ${question.difficulty === '困难' ? 'selected' : ''}>困难</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">题干</label>
+                        <textarea rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">${question.content || ''}</textarea>
+                    </div>
+            `;
+            
+            // 添加选项表单（如果有）
+            if (question.options && question.options.length > 0) {
+                html += `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">选项</label>
+                        <div class="space-y-3">
+                `;
+                
+                question.options.forEach(option => {
+                    html += `
+                        <div class="flex items-center">
+                            <input type="text" value="${option.id}" class="w-10 px-2 py-2 border border-gray-300 rounded-l-lg focus:ring-primary focus:border-primary text-center" disabled>
+                            <input type="text" value="${option.text}" class="flex-1 px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:ring-primary focus:border-primary">
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 添加答案表单
+            html += `
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">答案</label>
+                    <input type="text" value="${question.answer || ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                </div>
+            `;
+            
+            // 添加解析表单（如果有）
+            if (question.explanation) {
+                html += `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">解析</label>
+                        <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">${question.explanation}</textarea>
+                    </div>
+                `;
+            }
+            
+            html += `
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        // 处理保存编辑按钮
+        const saveEditBtn = document.getElementById('save-edit-btn');
+        if (saveEditBtn) {
+            saveEditBtn.addEventListener('click', function() {
+                // 这里应该有保存修改的逻辑
+                // 简化版，只显示提示
+                alert('题目修改成功！');
+                editQuestionModal.classList.add('hidden');
+            });
+        }
+        
+        // 处理新增题目表单提交
+        const questionAddForm = document.getElementById('question-add-form');
+        const saveAddBtn = document.getElementById('save-edit-btn');
+        
+        if (questionAddForm && saveAddBtn) {
+            questionAddForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // 这里应该有提交表单的逻辑
+                // 简化版，只显示提示
+                alert('题目添加成功！');
+                addQuestionModal.classList.add('hidden');
+                questionAddForm.reset();
+            });
+        }
+        
+        // // 处理删除题目按钮
+        // const deleteQuestionBtns = document.querySelectorAll('.delete-question');
+        
+        // if (deleteQuestionBtns.length > 0) {
+        //     deleteQuestionBtns.forEach(btn => {
+        //         btn.addEventListener('click', function() {
+        //             const questionId = this.getAttribute('data-question-id');
+        //             if (confirm(`确定要删除题目 ${questionId} 吗？`)) {
+        //                 // 这里应该有删除题目的逻辑
+        //                 // 简化版，只显示提示
+        //                 alert(`题目 ${questionId} 已成功删除！`);
+        //             }
+        //         });
+        //     });
+        // }
+        
+        // 处理导出按钮
+        // 避免重复声明,使用let而不是const
+        let exportSelectedBtn = document.getElementById('export-selected');
+        const exportAllBtn = document.getElementById('export-all');
+        
+        if (exportSelectedBtn) {
+            exportSelectedBtn.addEventListener('click', function() {
+                const checkedQuestions = document.querySelectorAll('.question-checkbox:checked');
+                if (checkedQuestions.length > 0) {
+                    const questionIds = Array.from(checkedQuestions).map(checkbox => checkbox.getAttribute('data-question-id'));
+                    alert(`导出选中的 ${questionIds.length} 道题目：${questionIds.join(', ')}`);
+                }
+            });
+        }
+        
+        if (exportAllBtn) {
+            exportAllBtn.addEventListener('click', function() {
+                alert('导出全部题目');
+            });
+        }
+    });
+</script>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm z-10">
+        <div class="flex items-center justify-between px-6 py-3">
+            <div class="flex items-center space-x-4">
+                <button id="sidebar-toggle" class="p-2 rounded-md hover:bg-gray-100 transition-colors">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="flex items-center">
+                    <i class="fa fa-graduation-cap text-primary text-2xl mr-2"></i>
+                    <h1 class="text-xl font-bold text-primary">H5题库管理系统</h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button class="p-2 rounded-full hover:bg-gray-100 relative transition-colors">
+                    <i class="fa fa-bell-o text-gray-600"></i>
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
+                </button>
+                
+                <div class="relative group">
+                    <button class="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors">
+                        <img src="https://picsum.photos/32/32" alt="用户头像" class="w-8 h-8 rounded-full object-cover border-2 border-primary">
+                        <span class="text-sm font-medium hidden md:block">管理员</span>
+                        <i class="fa fa-angle-down text-gray-600 hidden md:block"></i>
+                    </button>
+                    
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right group-hover:translate-y-0 translate-y-2">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-user-o mr-2"></i>个人信息
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-cog mr-2"></i>账号设置
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-danger hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-sign-out mr-2"></i>退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 侧边栏 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md z-10 flex-shrink-0 transition-all duration-300 transform translate-x-0 lg:translate-x-0 overflow-y-auto h-[calc(100vh-64px)]">
+            <nav class="py-4">
+                <div class="px-6 mb-4">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">主导航</p>
+                </div>
+                
+                <ul class="space-y-1">
+                    <li>
+                        <a href="2-数据概览.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-dashboard w-5 h-5 mr-3"></i>
+                            <span>数据概览</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="3-角色管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-users w-5 h-5 mr-3"></i>
+                            <span>角色管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="4-用户管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-user-circle-o w-5 h-5 mr-3"></i>
+                            <span>用户管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="5-学生管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-graduation-cap w-5 h-5 mr-3"></i>
+                            <span>学生管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="6-试卷管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-file-text-o w-5 h-5 mr-3"></i>
+                            <span>试卷管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="7-题库管理.html" class="nav-link flex items-center px-6 py-3 text-primary bg-primary/5 hover:bg-primary/10 transition-colors">
+                            <i class="fa fa-question-circle-o w-5 h-5 mr-3"></i>
+                            <span>题库管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="8-用户反馈.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-primary/10 transition-colors">
+                            <i class="fa fa-file-text-o w-5 h-5 mr-3"></i>
+                            <span>用户反馈</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="px-6 my-6">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">系统设置</p>
+                </div>
+                
+                <ul class="space-y-1">
+                    <li>
+                        <a href="9-系统设置.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-cog w-5 h-5 mr-3"></i>
+                            <span>系统设置</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="10-操作日志.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-history w-5 h-5 mr-3"></i>
+                            <span>操作日志</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
+            <!-- 页面标题 -->
+            <div class="mb-6">
+                <h2 id="page-title" class="text-2xl font-bold text-gray-800">题库管理</h2>
+                <p id="page-description" class="text-gray-500 mt-1">管理系统题库信息</p>
+            </div>
+            
+            <!-- 内容区域 -->
+            <div id="content-area">
+                <!-- 题库管理页面 -->
+                <div id="question-management-page" class="space-y-6">
+                    <!-- 题库筛选 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="font-semibold text-lg mb-4">筛选条件</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                            <div class="relative">
+                                <label for="question-id" class="block text-sm font-medium text-gray-700 mb-1">题目ID</label>
+                                <input type="text" id="question-id" placeholder="请输入题目ID" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                            </div>
+                            <div class="relative">
+                                <label for="question-id" class="block text-sm font-medium text-gray-700 mb-1">模糊搜索</label>
+                                <input type="text" id="question-id" placeholder="请输入关键词" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                            </div>
+                            <div class="relative">
+                                <label for="question-textbook" class="block text-sm font-medium text-gray-700 mb-1">教材</label>
+                                <select id="question-textbook" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                    <option value="">全部</option>
+                                    <option value="人教版">人教版</option>
+                                    <option value="苏教版">苏教版</option>
+                                    <option value="北师大版">北师大版</option>
+                                    <option value="沪教版">沪教版</option>
+                                    <option value="鲁教版">鲁教版</option>
+                                </select>
+                            </div>
+                            <div class="relative">
+                                <label for="question-grade" class="block text-sm font-medium text-gray-700 mb-1">年级</label>
+                                <select id="question-grade" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                    <option value="">全部</option>
+                                    <option value="一年级">一年级</option>
+                                    <option value="二年级">二年级</option>
+                                    <option value="三年级">三年级</option>
+                                    <option value="四年级">四年级</option>
+                                    <option value="五年级">五年级</option>
+                                    <option value="六年级">六年级</option>
+                                    <option value="初一">初一</option>
+                                    <option value="初二">初二</option>
+                                    <option value="初三">初三</option>
+                                    <!-- <option value="高一">高一</option>
+                                    <option value="高二">高二</option>
+                                    <option value="高三">高三</option> -->
+                                </select>
+                            </div>
+                            <div class="relative">
+                                <label for="question-subject" class="block text-sm font-medium text-gray-700 mb-1">学科</label>
+                                <select id="question-subject" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                    <option value="">全部</option>
+                                    <option value="数学">数学</option>
+                                    <option value="语文">语文</option>
+                                    <option value="英语">英语</option>
+                                    <option value="物理">物理</option>
+                                    <option value="化学">化学</option>
+                                    <option value="生物">生物</option>
+                                    <option value="历史">历史</option>
+                                    <option value="地理">地理</option>
+                                    <option value="政治">政治</option>
+                                </select>
+                            </div>
+                            <div class="relative">
+                                <label for="question-chapter" class="block text-sm font-medium text-gray-700 mb-1">章节知识点</label>
+                                <select id="question-chapter" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                    <option value="">全部</option>
+                                    <!-- 这里的章节知识点选项会根据所选学科和年级动态加载 -->
+                                </select>
+                            </div>
+                            <div class="relative">
+                                <label for="question-type" class="block text-sm font-medium text-gray-700 mb-1">题型</label>
+                                <select id="question-type" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                    <option value="">全部</option>
+                                    <option value="单选题">单选题</option>
+                                    <option value="多选题">多选题</option>
+                                    <option value="判断题">判断题</option>
+                                    <option value="填空题">填空题</option>
+                                    <option value="解答题">解答题</option>
+                                    <option value="应用题">应用题</option>
+                                </select>
+                            </div>
+                            <div class="relative">
+                                <label for="question-difficulty" class="block text-sm font-medium text-gray-700 mb-1">难易程度</label>
+                                <select id="question-difficulty" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                    <option value="">全部</option>
+                                    <option value="简单">简单</option>
+                                    <option value="中等">中等</option>
+                                    <option value="困难">困难</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-end space-x-3">
+                            <button id="reset-question-filter" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                                重置
+                            </button>
+                            <button id="search-question" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center">
+                                <i class="fa fa-search mr-2"></i> 搜索
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 题库列表 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                            <div class="flex items-center">
+                                <h3 class="font-semibold text-lg">题库列表</h3>
+                                <div class="ml-4 flex items-center text-sm text-gray-500">
+                                    <span id="selected-count">0</span>
+                                    <span class="mx-1">/</span>
+                                    <span id="total-count">5</span>
+                                    <span class="mx-2">已选择</span>
+                                    <button id="select-all" class="text-primary hover:text-primary/80">全选</button>
+                                    <span class="mx-2">|</span>
+                                    <button id="clear-selection" class="text-primary hover:text-primary/80">取消</button>
+                                </div>
+                            </div>
+                            <div class="mt-4 md:mt-0 flex space-x-3">
+                                <button id="export-selected" class="px-4 py-2 bg-success text-white rounded-lg font-medium hover:bg-success/90 transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                    <i class="fa fa-download mr-2"></i> 导出选中
+                                </button>
+                                <button id="export-all" class="px-4 py-2 bg-secondary text-white rounded-lg font-medium hover:bg-secondary/90 transition-colors flex items-center">
+                                    <i class="fa fa-download mr-2"></i> 导出全部
+                                </button>
+                                <button id="add-question-btn" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center">
+                                    <i class="fa fa-plus mr-2"></i> 新增题目
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <input type="checkbox" id="header-checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">题目ID</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">题干</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学科</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">年级</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">题型</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">难易程度</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="question-table-body">
+                                    <tr data-question-id="1">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <input type="checkbox" class="question-checkbox rounded border-gray-300 text-primary focus:ring-primary" data-question-id="1">
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            QUES001
+                                        </td>
+                                        <td class="px-6 py-4 max-w-xs">
+                                            <div class="text-sm text-gray-900 truncate">1. 5 + 7 = ?</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            数学
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            三年级
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="question-type">单选题</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="status-badge difficulty-easy">简单</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2025-06-10
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-primary hover:text-primary/80 mr-3 view-question" data-question-id="1">
+                                                <i class="fa fa-eye"></i> 查看
+                                            </button>
+                                            <!-- <button class="text-secondary hover:text-secondary/80 mr-3 edit-question" data-question-id="1">
+                                                <i class="fa fa-pencil"></i> 修改
+                                            </button>
+                                            <button class="text-danger hover:text-danger/80 delete-question" data-question-id="1">
+                                                <i class="fa fa-trash"></i> 删除
+                                            </button> -->
+                                        </td>
+                                    </tr>
+                                    <tr data-question-id="2">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <input type="checkbox" class="question-checkbox rounded border-gray-300 text-primary focus:ring-primary" data-question-id="2">
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            QUES002
+                                        </td>
+                                        <td class="px-6 py-4 max-w-xs">
+                                            <div class="text-sm text-gray-900 truncate">盼望着，盼望着，东风来了，春天的脚步近了。这句话的作者是谁？</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            语文
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            六年级
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="question-type">填空题</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="status-badge difficulty-medium">中等</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2025-06-09
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-primary hover:text-primary/80 mr-3 view-question" data-question-id="2">
+                                                <i class="fa fa-eye"></i> 查看
+                                            </button>
+                                            <!-- <button class="text-secondary hover:text-secondary/80 mr-3 edit-question" data-question-id="2">
+                                                <i class="fa fa-pencil"></i> 修改
+                                            </button>
+                                            <button class="text-danger hover:text-danger/80 delete-question" data-question-id="2">
+                                                <i class="fa fa-trash"></i> 删除 -->
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr data-question-id="3">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <input type="checkbox" class="question-checkbox rounded border-gray-300 text-primary focus:ring-primary" data-question-id="3">
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            QUES003
+                                        </td>
+                                        <td class="px-6 py-4 max-w-xs">
+                                            <div class="text-sm text-gray-900 truncate">—______ do you usually go to school? —By bike.</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            英语
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            初二
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="question-type">单选题</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="status-badge difficulty-easy">简单</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2025-06-08
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-primary hover:text-primary/80 mr-3 view-question" data-question-id="3">
+                                                <i class="fa fa-eye"></i> 查看
+                                            </button>
+                                            <!-- <button class="text-secondary hover:text-secondary/80 mr-3 edit-question" data-question-id="3">
+                                                <i class="fa fa-pencil"></i> 修改
+                                            </button>
+                                            <button class="text-danger hover:text-danger/80 delete-question" data-question-id="3">
+                                                <i class="fa fa-trash"></i> 删除 -->
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr data-question-id="4">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <input type="checkbox" class="question-checkbox rounded border-gray-300 text-primary focus:ring-primary" data-question-id="4">
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            QUES004
+                                        </td>
+                                        <td class="px-6 py-4 max-w-xs">
+                                            <div class="text-sm text-gray-900 truncate">一个长方形的长是8cm，宽是5cm，它的面积是多少？</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            数学
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            五年级
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="question-type">解答题</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="status-badge difficulty-medium">中等</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2025-06-07
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-primary hover:text-primary/80 mr-3 view-question" data-question-id="4">
+                                                <i class="fa fa-eye"></i> 查看
+                                            </button>
+                                            <!-- <button class="text-secondary hover:text-secondary/80 mr-3 edit-question" data-question-id="4">
+                                                <i class="fa fa-pencil"></i> 修改
+                                            </button>
+                                            <button class="text-danger hover:text-danger/80 delete-question" data-question-id="4">
+                                                <i class="fa fa-trash"></i> 删除
+                                            </button> -->
+                                        </td>
+                                    </tr>
+                                    <tr data-question-id="5">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <input type="checkbox" class="question-checkbox rounded border-gray-300 text-primary focus:ring-primary" data-question-id="5">
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            QUES005
+                                        </td>
+                                        <td class="px-6 py-4 max-w-xs">
+                                            <div class="text-sm text-gray-900 truncate">下列哪种现象属于物理变化？</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            化学
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            初三
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="question-type">多选题</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="status-badge difficulty-hard">困难</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            2025-06-06
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-primary hover:text-primary/80 mr-3 view-question" data-question-id="5">
+                                                <i class="fa fa-eye"></i> 查看
+                                            </button>
+                                            <!-- <button class="text-secondary hover:text-secondary/80 mr-3 edit-question" data-question-id="5">
+                                                <i class="fa fa-pencil"></i> 修改
+                                            </button>
+                                            <button class="text-danger hover:text-danger/80 delete-question" data-question-id="5">
+                                                <i class="fa fa-trash"></i> 删除
+                                            </button> -->
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 分页 -->
+                        <div class="flex items-center justify-between px-4 py-3 sm:px-6 mt-4">
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        显示第 <span class="font-medium">1</span> 到 <span class="font-medium">5</span> 条，共 <span class="font-medium">24</span> 条记录
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">上一页</span>
+                                            <i class="fa fa-chevron-left"></i>
+                                        </a>
+                                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary text-sm font-medium text-white">
+                                            1
+                                        </a>
+                                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            2
+                                        </a>
+                                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            3
+                                        </a>
+                                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                            ...
+                                        </span>
+                                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            5
+                                        </a>
+                                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">下一页</span>
+                                            <i class="fa fa-chevron-right"></i>
+                                        </a>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- 查看题目模态框 -->
+    <div id="view-question-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-900" id="view-question-title">查看题目</h3>
+                    <button id="close-view-modal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6" id="view-question-content">
+                <!-- 题目查看内容将在这里动态加载 -->
+                <div class="text-center py-12">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
+                        <i class="fa fa-question-circle-o text-blue-500 text-2xl"></i>
+                    </div>
+                    <h4 class="text-lg font-medium text-gray-900 mb-2">选择题目查看详情</h4>
+                    <p class="text-gray-500">请在题库列表中点击查看按钮查看详细内容</p>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                <button id="close-view-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 修改题目模态框 -->
+    <div id="edit-question-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-900" id="edit-question-title">修改题目</h3>
+                    <button id="close-edit-modal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6" id="edit-question-content">
+                <!-- 修改题目表单将在这里动态加载 -->
+                <div class="text-center py-12">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
+                        <i class="fa fa-pencil text-blue-500 text-2xl"></i>
+                    </div>
+                    <h4 class="text-lg font-medium text-gray-900 mb-2">选择题目进行修改</h4>
+                    <p class="text-gray-500">请在题库列表中点击修改按钮进行题目修改</p>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                <button id="cancel-edit-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                    取消
+                </button>
+                <button id="save-edit-btn" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center">
+                    <i class="fa fa-save mr-2"></i> 保存
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 新增题目模态框 -->
+    <div id="add-question-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-900">新增题目</h3>
+                    <button id="close-add-modal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6" id="add-question-form">
+                <form id="question-add-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="relative">
+                            <label for="add-textbook" class="block text-sm font-medium text-gray-700 mb-1">教材</label>
+                            <select id="add-textbook" name="textbook" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                <option value="">请选择教材</option>
+                                <option value="人教版">人教版</option>
+                                <option value="苏教版">苏教版</option>
+                                <option value="北师大版">北师大版</option>
+                                <option value="沪教版">沪教版</option>
+                                <option value="鲁教版">鲁教版</option>
+                            </select>
+                        </div>
+                        <div class="relative">
+                            <label for="add-grade" class="block text-sm font-medium text-gray-700 mb-1">年级</label>
+                            <select id="add-grade" name="grade" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                <option value="">请选择年级</option>
+                                <option value="一年级">一年级</option>
+                                <option value="二年级">二年级</option>
+                                <option value="三年级">三年级</option>
+                                <option value="四年级">四年级</option>
+                                <option value="五年级">五年级</option>
+                                <option value="六年级">六年级</option>
+                                <option value="初一">初一</option>
+                                <option value="初二">初二</option>
+                                <option value="初三">初三</option>
+                                <option value="高一">高一</option>
+                                <option value="高二">高二</option>
+                                <option value="高三">高三</option>
+                            </select>
+                        </div>
+                        <div class="relative">
+                            <label for="add-subject" class="block text-sm font-medium text-gray-700 mb-1">学科</label>
+                            <select id="add-subject" name="subject" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                <option value="">请选择学科</option>
+                                <option value="数学">数学</option>
+                                <option value="语文">语文</option>
+                                <option value="英语">英语</option>
+                                <option value="物理">物理</option>
+                                <option value="化学">化学</option>

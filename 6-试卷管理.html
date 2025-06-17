@@ -1,0 +1,879 @@
+<html lang="zh-CN"><head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>H5题库管理系统 - 试卷管理</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+            
+            <script>
+                tailwind.config = {
+                    theme: {
+                        extend: {
+                            colors: {
+                                primary: '#165DFF',
+                                secondary: '#0FC6C2',
+                                success: '#00B42A',
+                                warning: '#FF7D00',
+                                danger: '#F53F3F',
+                                info: '#86909C',
+                                dark: '#1D2129',
+                                light: '#F2F3F5',
+                            },
+                            fontFamily: {
+                                inter: ['Inter', 'sans-serif'],
+                            },
+                        }
+                    }
+                }
+            </script>
+            
+            <style type="text/tailwindcss">
+                @layer utilities {
+                    .content-auto {
+                        content-visibility: auto;
+                    }
+                    .scrollbar-hide {
+                        -ms-overflow-style: none;
+                        scrollbar-width: none;
+                    }
+                    .scrollbar-hide::-webkit-scrollbar {
+                        display: none;
+                    }
+                    .transition-bg {
+                        transition: background-color 0.2s ease;
+                    }
+                    .transition-transform {
+                        transition: transform 0.2s ease;
+                    }
+                    .hover-scale {
+                        transition: transform 0.2s ease;
+                    }
+                    .hover-scale:hover {
+                        transform: scale(1.02);
+                    }
+                    .status-badge {
+                        @apply px-2 py-1 text-xs font-medium rounded-full;
+                    }
+                    .status-downloaded {
+                        @apply bg-green-100 text-green-800;
+                    }
+                    .status-not-downloaded {
+                        @apply bg-gray-100 text-gray-800;
+                    }
+                    .status-uploaded {
+                        @apply bg-blue-100 text-blue-800;
+                    }
+                    .status-not-uploaded {
+                        @apply bg-gray-100 text-gray-800;
+                    }
+                    .status-analyzed {
+                        @apply bg-purple-100 text-purple-800;
+                    }
+                    .status-not-analyzed {
+                        @apply bg-gray-100 text-gray-800;
+                    }
+                }
+            </style>
+        </head>
+        <body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+            <!-- 顶部导航栏 -->
+            <header class="bg-white shadow-sm z-10">
+                <div class="flex items-center justify-between px-6 py-3">
+                    <div class="flex items-center space-x-4">
+                        <button id="sidebar-toggle" class="p-2 rounded-md hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-bars text-gray-600"></i>
+                        </button>
+                        <div class="flex items-center">
+                            <i class="fa fa-graduation-cap text-primary text-2xl mr-2"></i>
+                            <h1 class="text-xl font-bold text-primary">H5题库管理系统</h1>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <button class="p-2 rounded-full hover:bg-gray-100 relative transition-colors">
+                            <i class="fa fa-bell-o text-gray-600"></i>
+                            <span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
+                        </button>
+                        
+                        <div class="relative group">
+                            <button class="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors">
+                                <img src="https://picsum.photos/32/32" alt="用户头像" class="w-8 h-8 rounded-full object-cover border-2 border-primary">
+                                <span class="text-sm font-medium hidden md:block">管理员</span>
+                                <i class="fa fa-angle-down text-gray-600 hidden md:block"></i>
+                            </button>
+                            
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right group-hover:translate-y-0 translate-y-2">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fa fa-user-o mr-2"></i>个人信息
+                                </a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fa fa-cog mr-2"></i>账号设置
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-danger hover:bg-gray-100 transition-colors">
+                                    <i class="fa fa-sign-out mr-2"></i>退出登录
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex flex-1 overflow-hidden">
+                <!-- 侧边栏 -->
+                <aside id="sidebar" class="w-64 bg-white shadow-md z-10 flex-shrink-0 transition-all duration-300 transform translate-x-0 lg:translate-x-0 overflow-y-auto h-[calc(100vh-64px)]">
+                    <nav class="py-4">
+                        <div class="px-6 mb-4">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">主导航</p>
+                        </div>
+                        
+                        <ul class="space-y-1">
+                            <li>
+                                <a href="2-数据概览.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                                    <i class="fa fa-dashboard w-5 h-5 mr-3"></i>
+                                    <span>数据概览</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="3-角色管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                                    <i class="fa fa-users w-5 h-5 mr-3"></i>
+                                    <span>角色管理</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="4-用户管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                                    <i class="fa fa-user-circle-o w-5 h-5 mr-3"></i>
+                                    <span>用户管理</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="5-学生管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                                    <i class="fa fa-graduation-cap w-5 h-5 mr-3"></i>
+                                    <span>学生管理</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="6-试卷管理.html" class="nav-link flex items-center px-6 py-3 text-primary bg-primary/5 hover:bg-primary/10 transition-colors">
+                                    <i class="fa fa-file-text-o w-5 h-5 mr-3"></i>
+                                    <span>试卷管理</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="7-题库管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                                    <i class="fa fa-question-circle-o w-5 h-5 mr-3"></i>
+                                    <span>题库管理</span>
+                                </a>
+                                <a href="8-用户反馈.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-primary/10 transition-colors">
+                                    <i class="fa fa-file-text-o w-5 h-5 mr-3"></i>
+                                    <span>用户反馈</span>
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="px-6 my-6">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">系统设置</p>
+                        </div>
+                        
+                        <ul class="space-y-1">
+                            <li>
+                                <a href="9-系统设置.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                                    <i class="fa fa-cog w-5 h-5 mr-3"></i>
+                                    <span>系统设置</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="10-操作日志.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                                    <i class="fa fa-history w-5 h-5 mr-3"></i>
+                                    <span>操作日志</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </aside>
+
+                <!-- 主内容区 -->
+                <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
+                    <!-- 页面标题 -->
+                    <div class="mb-6">
+                        <h2 id="page-title" class="text-2xl font-bold text-gray-800">试卷管理</h2>
+                        <p id="page-description" class="text-gray-500 mt-1">管理系统试卷信息</p>
+                    </div>
+                    
+                    <!-- 内容区域 -->
+                    <div id="content-area">
+                        <!-- 试卷管理页面 -->
+                        <div id="paper-management-page" class="space-y-6">
+                            <!-- 试卷筛选 -->
+                            <div class="bg-white rounded-xl shadow-sm p-6">
+                                <h3 class="font-semibold text-lg mb-4">筛选条件</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                    <div class="relative">
+                                        <label for="paper-name" class="block text-sm font-medium text-gray-700 mb-1">试卷名称</label>
+                                        <input type="text" id="paper-name" placeholder="请输入" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                    </div>
+                                    <div class="relative">
+                                        <label for="paper-subject" class="block text-sm font-medium text-gray-700 mb-1">学科</label>
+                                        <select id="paper-subject" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                            <option value="">全部</option>
+                                            <option value="数学">数学</option>
+                                            <option value="语文">语文</option>
+                                            <option value="英语">英语</option>
+                                            <option value="物理">物理</option>
+                                            <option value="化学">化学</option>
+                                            <option value="生物">生物</option>
+                                            <option value="历史">历史</option>
+                                            <option value="地理">地理</option>
+                                            <option value="政治">政治</option>
+                                        </select>
+                                    </div>
+                                    <div class="relative">
+                                        <label for="paper-grade" class="block text-sm font-medium text-gray-700 mb-1">年级</label>
+                                        <select id="paper-grade" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                            <option value="">全部</option>
+                                            <option value="一年级">一年级</option>
+                                            <option value="二年级">二年级</option>
+                                            <option value="三年级">三年级</option>
+                                            <option value="四年级">四年级</option>
+                                            <option value="五年级">五年级</option>
+                                            <option value="六年级">六年级</option>
+                                            <option value="初一">初一</option>
+                                            <option value="初二">初二</option>
+                                            <option value="初三">初三</option>
+                                            <!-- <option value="高一">高一</option>
+                                            <option value="高二">高二</option>
+                                            <option value="高三">高三</option> -->
+                                        </select>
+                                    </div>
+                                    <div class="relative">
+                                        <label for="paper-semester" class="block text-sm font-medium text-gray-700 mb-1">学期</label>
+                                        <select id="paper-semester" class="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                            <option value="">全部</option>
+                                            <option value="上学期">上学期</option>
+                                            <option value="下学期">下学期</option>
+                                        </select>
+                                    </div>
+                                    <div class="relative">
+                                        <label for="paper-creator" class="block text-sm font-medium text-gray-700 mb-1">创建人</label>
+                                        <div class="relative">
+                                            <input type="text" id="paper-creator" placeholder="请输入" class="w-full pl-3 pr-10 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                                            <button class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                                <i class="fa fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex justify-end space-x-3">
+                                    <button id="reset-paper-filter" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                                        重置
+                                    </button>
+                                    <button id="search-paper" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center">
+                                        <i class="fa fa-search mr-2"></i> 搜索
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 试卷列表 -->
+                            <div class="bg-white rounded-xl shadow-sm p-6">
+                                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                                    <h3 class="font-semibold text-lg">试卷列表</h3>
+                                </div>
+                                
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">试卷名称</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学科</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">年级</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建人</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">下载状态</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">答案状态</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">分析报告</th>
+                                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                                            <i class="fa fa-file-text-o text-primary"></i>
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <div class="text-sm font-medium text-gray-900">三年级数学期中考试</div>
+                                                            <div class="text-xs text-gray-500">ID: PAP001</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    数学
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    三年级
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-6 w-6 rounded-full overflow-hidden">
+                                                            <img src="https://picsum.photos/24/24?random=10" alt="用户头像" class="h-full w-full object-cover">
+                                                        </div>
+                                                        <div class="ml-2">
+                                                            <div class="text-sm font-medium text-gray-900">张三</div>
+                                                            <!-- <div class="text-xs text-gray-500">管理员</div> -->
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    2025-06-10
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="status-badge status-downloaded">已下载</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="status-badge status-uploaded">已上传</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="status-badge status-analyzed">已生成</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <button class="text-primary hover:text-primary/80 mr-3" data-paper-id="1">
+                                                        <i class="fa fa-eye"></i> 预览
+                                                    </button>
+                                                    <button class="text-secondary hover:text-secondary/80 mr-3" data-paper-id="1">
+                                                        <i class="fa fa-download"></i> 下载
+                                                    </button>
+                                                    <button class="text-info hover:text-info/80" data-paper-id="1">
+                                                        <i class="fa fa-bar-chart"></i> 分析
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-8 w-8 bg-secondary/10 rounded-full flex items-center justify-center">
+                                                            <i class="fa fa-file-text-o text-secondary"></i>
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <div class="text-sm font-medium text-gray-900">六年级语文期末测试</div>
+                                                            <div class="text-xs text-gray-500">ID: PAP002</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    语文
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    六年级
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-6 w-6 rounded-full overflow-hidden">
+                                                            <img src="https://picsum.photos/24/24?random=11" alt="用户头像" class="h-full w-full object-cover">
+                                                        </div>
+                                                        <div class="ml-2">
+                                                            <div class="text-sm font-medium text-gray-900">李四</div>
+                                                            <!-- <div class="text-xs text-gray-500">教师</div> -->
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    2025-06-08
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="status-badge status-downloaded">已下载</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="status-badge status-not-uploaded">未上传</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="status-badge status-not-analyzed">未生成</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <button class="text-primary hover:text-primary/80 mr-3" data-paper-id="2">
+                                                        <i class="fa fa-eye"></i> 预览
+                                                    </button>
+                                                    <button class="text-secondary hover:text-secondary/80 mr-3" data-paper-id="2">
+                                                        <i class="fa fa-download"></i> 下载
+                                                    </button>
+                                                    <button class="text-info hover:text-info/80" data-paper-id="2">
+                                                        <i class="fa fa-bar-chart"></i> 分析
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-8 w-8 bg-warning/10 rounded-full flex items-center justify-center">
+                                                            <i class="fa fa-file-text-o text-warning"></i>
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <div class="text-sm font-medium text-gray-900">初二英语单元测试</div>
+                                                            <div class="text-xs text-gray-500">ID: PAP003</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    英语
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    初二
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-6 w-6 rounded-full overflow-hidden">
+                                                            <img src="https://picsum.photos/24/24?random=12" alt="用户头像" class="h-full w-full object-cover">
+                                                        </div>
+                                                        <div class="ml-2">
+                                                            <div class="text-sm font-medium text-gray-900">王五</div>
+                                                            <!-- <div class="text-xs text-gray-500">教师</div> -->
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    2025-06-05
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="status-badge status-not-downloaded">未下载</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="status-badge status-not-uploaded">未上传</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="status-badge status-not-analyzed">未生成</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <button class="text-primary hover:text-primary/80 mr-3" data-paper-id="3">
+                                                        <i class="fa fa-eye"></i> 预览
+                                                    </button>
+                                                    <button class="text-secondary hover:text-secondary/80 mr-3" data-paper-id="3">
+                                                        <i class="fa fa-download"></i> 下载
+                                                    </button>
+                                                    <button class="text-info hover:text-info/80" data-paper-id="3">
+                                                        <i class="fa fa-bar-chart"></i> 分析
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- 分页 -->
+                                <div class="flex items-center justify-between px-4 py-3 sm:px-6 mt-4">
+                                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                        <div>
+                                            <p class="text-sm text-gray-700">
+                                                显示第 <span class="font-medium">1</span> 到 <span class="font-medium">3</span> 条，共 <span class="font-medium">12</span> 条记录
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                                <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                    <span class="sr-only">上一页</span>
+                                                    <i class="fa fa-chevron-left"></i>
+                                                </a>
+                                                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary text-sm font-medium text-white">
+                                                    1
+                                                </a>
+                                                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                    2
+                                                </a>
+                                                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                    3
+                                                </a>
+                                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                                    ...
+                                                </span>
+                                                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                    4
+                                                </a>
+                                                <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                    <span class="sr-only">下一页</span>
+                                                    <i class="fa fa-chevron-right"></i>
+                                                </a>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 试卷预览模态框 -->
+                            <div id="paper-preview-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+                                <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-auto">
+                                    <div class="p-6 border-b border-gray-200">
+                                        <div class="flex justify-between items-center">
+                                            <h3 class="text-lg font-semibold text-gray-900" id="paper-modal-title">试卷预览</h3>
+                                            <button id="close-paper-modal" class="text-gray-500 hover:text-gray-700">
+                                                <i class="fa fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="p-6" id="paper-modal-content">
+                                        <!-- 试卷预览内容将在这里动态加载 -->
+                                        <div class="text-center py-12">
+                                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
+                                                <i class="fa fa-file-text-o text-blue-500 text-2xl"></i>
+                                            </div>
+                                            <h4 class="text-lg font-medium text-gray-900 mb-2">选择试卷查看预览</h4>
+                                            <p class="text-gray-500">请在试卷列表中点击预览按钮查看详细内容</p>
+                                        </div>
+                                    </div>
+                                    <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                                        <button id="close-preview-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                                            关闭
+                                        </button>
+                                        <button id="download-paper-btn" class="px-4 py-2 bg-secondary text-white rounded-lg font-medium hover:bg-secondary/90 transition-colors flex items-center">
+                                            <i class="fa fa-download mr-2"></i> 下载试卷
+                                        </button>
+                                        <button id="upload-answer-btn" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center">
+                                            <i class="fa fa-upload mr-2"></i> 上传答案
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 上传答案模态框 -->
+                            <div id="upload-answer-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+                                <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+                                    <div class="p-6 border-b border-gray-200">
+                                        <div class="flex justify-between items-center">
+                                            <h3 class="text-lg font-semibold text-gray-900">上传答案</h3>
+                                            <button id="close-upload-modal" class="text-gray-500 hover:text-gray-700">
+                                                <i class="fa fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="p-6">
+                                        <form id="answer-upload-form" enctype="multipart/form-data">
+                                            <input type="hidden" id="paper-id-input" name="paper_id">
+                                            <div class="mb-4">
+                                                <label for="answer-file" class="block text-sm font-medium text-gray-700 mb-1">选择答案文件</label>
+                                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-primary transition-colors">
+                                                    <div class="space-y-1 text-center">
+                                                        <i class="fa fa-cloud-upload text-gray-400 text-3xl mb-2"></i>
+                                                        <div class="flex text-sm text-gray-600">
+                                                            <label for="answer-file" class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary/80 focus-within:outline-none">
+                                                                <span>上传文件</span>
+                                                                <input id="answer-file" name="answer_file" type="file" class="sr-only" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                                            </label>
+                                                            <p class="pl-1">或拖放文件</p>
+                                                        </div>
+                                                        <p class="text-xs text-gray-500">
+                                                            支持 PDF, DOC, DOCX, JPG, PNG
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div id="file-name-display" class="mt-2 text-sm text-gray-500 hidden">
+                                                    <i class="fa fa-file-text-o mr-1"></i> <span id="selected-file-name"></span>
+                                                </div>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label for="answer-notes" class="block text-sm font-medium text-gray-700 mb-1">备注说明</label>
+                                                <textarea id="answer-notes" name="notes" rows="3" class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" placeholder="请输入备注说明（可选）"></textarea>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                                        <button id="cancel-upload-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                                            取消
+                                        </button>
+                                        <button id="submit-upload-btn" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center">
+                                            <i class="fa fa-check mr-2"></i> 提交
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 分析报告模态框 -->
+                            <div id="analysis-report-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+                                <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-auto">
+                                    <div class="p-6 border-b border-gray-200">
+                                        <div class="flex justify-between items-center">
+                                            <h3 class="text-lg font-semibold text-gray-900" id="analysis-modal-title">试卷分析报告</h3>
+                                            <button id="close-analysis-modal" class="text-gray-500 hover:text-gray-700">
+                                                <i class="fa fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="p-6" id="analysis-modal-content">
+                                        <!-- 分析报告内容将在这里动态加载 -->
+                                        <div class="text-center py-12">
+                                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 mb-4">
+                                                <i class="fa fa-bar-chart text-purple-500 text-2xl"></i>
+                                            </div>
+                                            <h4 class="text-lg font-medium text-gray-900 mb-2">生成分析报告</h4>
+                                            <p class="text-gray-500">请选择试卷并点击分析按钮生成详细报告</p>
+                                        </div>
+                                    </div>
+                                    <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                                        <button id="close-analysis-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                                            关闭
+                                        </button>
+                                        <button id="download-analysis-btn" class="px-4 py-2 bg-secondary text-white rounded-lg font-medium hover:bg-secondary/90 transition-colors flex items-center">
+                                            <i class="fa fa-download mr-2"></i> 下载报告
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+            
+            <!-- JavaScript -->
+            <script>
+                // DOM 加载完成后执行
+                document.addEventListener('DOMContentLoaded', function() {
+                    // 侧边栏切换
+                    const sidebarToggle = document.getElementById('sidebar-toggle');
+                    const sidebar = document.getElementById('sidebar');
+                    
+                    sidebarToggle.addEventListener('click', function() {
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            sidebar.classList.remove('-translate-x-full');
+                            sidebar.classList.add('translate-x-0');
+                        } else {
+                            sidebar.classList.remove('translate-x-0');
+                            sidebar.classList.add('-translate-x-full');
+                        }
+                    });
+                    
+                    // 导航链接高亮
+                    const navLinks = document.querySelectorAll('.nav-link');
+                    navLinks.forEach(link => {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            
+                            // 移除所有链接的高亮状态
+                            navLinks.forEach(l => {
+                                l.classList.remove('text-primary', 'bg-primary/5');
+                                l.classList.add('text-gray-600');
+                            });
+                            
+                            // 添加当前链接的高亮状态
+                            this.classList.remove('text-gray-600');
+                            this.classList.add('text-primary', 'bg-primary/5');
+                            
+                            // 页面标题和描述更新
+                            const pageTitle = this.querySelector('span').textContent;
+                            document.getElementById('page-title').textContent = pageTitle;
+                            
+                            const pageDescriptionMap = {
+                                '数据概览': '系统数据概览与统计',
+                                '角色管理': '管理系统角色与权限',
+                                '用户管理': '管理系统用户信息',
+                                '学生管理': '管理学生信息与成绩',
+                                '试卷管理': '管理系统试卷信息',
+                                '题库管理': '管理系统题库信息',
+                                '系统设置': '系统基础设置',
+                                '操作日志': '系统操作记录与日志'
+                            };
+                            
+                            document.getElementById('page-description').textContent = pageDescriptionMap[pageTitle] || '';
+                        });
+                    });
+                    
+                    // 试卷预览模态框
+                    const previewButtons = document.querySelectorAll('[data-paper-id]');
+                    const paperPreviewModal = document.getElementById('paper-preview-modal');
+                    const closePaperModal = document.getElementById('close-paper-modal');
+                    const closePreviewBtn = document.getElementById('close-preview-btn');
+                    const paperModalTitle = document.getElementById('paper-modal-title');
+                    const paperModalContent = document.getElementById('paper-modal-content');
+                    
+                    previewButtons.forEach(button => {
+                        if (button.textContent.trim().includes('预览')) {
+                            button.addEventListener('click', function() {
+                                const paperId = this.getAttribute('data-paper-id');
+                                
+                                // 这里可以根据paperId加载对应的试卷内容
+                                // 模拟加载试卷内容
+                                loadPaperPreview(paperId);
+                                
+                                // 显示模态框
+                                paperPreviewModal.classList.remove('hidden');
+                                document.body.style.overflow = 'hidden'; // 防止背景滚动
+                            });
+                        }
+                    });
+                    
+                    function loadPaperPreview(paperId) {
+                        // 模拟根据试卷ID加载不同的试卷内容
+                        const paperData = {
+                            '1': {
+                                title: '三年级数学期中考试',
+                                content: `
+                                    <div class="space-y-6">
+                                        <div class="text-center mb-6">
+                                            <h2 class="text-xl font-bold">三年级数学期中考试</h2>
+                                            <p class="text-gray-600">时间：90分钟 &nbsp;&nbsp;&nbsp; 总分：100分</p>
+                                        </div>
+                                        
+                                        <div class="border-b border-gray-200 pb-4">
+                                            <h3 class="font-semibold text-lg mb-3">一、选择题（每题2分，共20分）</h3>
+                                            <ol class="list-decimal list-inside space-y-3">
+                                                <li>1. 5 + 7 = ?</li>
+                                                <li>2. 12 - 8 = ?</li>
+                                                <li>3. 3 × 6 = ?</li>
+                                                <li>4. 24 ÷ 4 = ?</li>
+                                                <li>5. 一个正方形的边长是5cm，它的周长是多少？</li>
+                                            </ol>
+                                        </div>
+                                        
+                                        <div class="border-b border-gray-200 pb-4">
+                                            <h3 class="font-semibold text-lg mb-3">二、填空题（每题3分，共30分）</h3>
+                                            <ol class="list-decimal list-inside space-y-3">
+                                                <li>1. 1米 = ______ 厘米</li>
+                                                <li>2. 2小时 = ______ 分钟</li>
+                                                <li>3. 一个三角形有 ______ 条边</li>
+                                                <li>4. 最小的两位数是 ______</li>
+                                                <li>5. 36的因数有 ______</li>
+                                            </ol>
+                                        </div>
+                                        
+                                        <div>
+                                            <h3 class="font-semibold text-lg mb-3">三、解答题（共50分）</h3>
+                                            <ol class="list-decimal list-inside space-y-4">
+                                                <li>1. 小明有15个苹果，他给了小红3个，又给了小李5个，小明还剩下多少个苹果？（10分）</li>
+                                                <li>2. 一个长方形的长是8cm，宽是5cm，它的面积和周长各是多少？（15分）</li>
+                                                <li>3. 小华去商店买文具，铅笔每支2元，橡皮每块1元，他买了3支铅笔和2块橡皮，一共花了多少钱？（10分）</li>
+                                                <li>4. 学校组织春游，一年级有120人，二年级有130人，三年级有140人，每辆大巴车可以坐50人，至少需要几辆大巴车？（15分）</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                `
+                            },
+                            '2': {
+                                title: '六年级语文期末测试',
+                                content: `
+                                    <div class="space-y-6">
+                                        <div class="text-center mb-6">
+                                            <h2 class="text-xl font-bold">六年级语文期末测试</h2>
+                                            <p class="text-gray-600">时间：120分钟 &nbsp;&nbsp;&nbsp; 总分：100分</p>
+                                        </div>
+                                        
+                                        <div class="border-b border-gray-200 pb-4">
+                                            <h3 class="font-semibold text-lg mb-3">一、基础知识（共30分）</h3>
+                                            <ol class="list-decimal list-inside space-y-3">
+                                                <li>1. 看拼音写词语（10分）</li>
+                                                <li>2. 选择正确的读音（5分）</li>
+                                                <li>3. 组词（5分）</li>
+                                                <li>4. 造句（10分）</li>
+                                            </ol>
+                                        </div>
+                                        
+                                        <div class="border-b border-gray-200 pb-4">
+                                            <h3 class="font-semibold text-lg mb-3">二、阅读理解（共30分）</h3>
+                                            <p>阅读下面的短文，回答问题。</p>
+                                            <p>《春》</p>
+                                            <p>盼望着，盼望着，东风来了，春天的脚步近了。</p>
+                                            <p>一切都像刚睡醒的样子，欣欣然张开了眼。山朗润起来了，水涨起来了，太阳的脸红起来了。</p>
+                                            <p>小草偷偷地从土里钻出来，嫩嫩的，绿绿的。园子里，田野里，瞧去，一大片一大片满是的。坐着，躺着，打两个滚，踢几脚球，赛几趟跑，捉几回迷藏。风轻悄悄的，草软绵绵的。</p>
+                                            <p>...</p>
+                                            <ol class="list-decimal list-inside space-y-3 mt-3">
+                                                <li>1. 短文的作者是谁？（5分）</li>
+                                                <li>2. 文中描写了春天的哪些景物？（10分）</li>
+                                                <li>3. 请用文中的一句话来形容春天的特点。（15分）</li>
+                                            </ol>
+                                        </div>
+                                        
+                                        <div>
+                                            <h3 class="font-semibold text-lg mb-3">三、作文（共40分）</h3>
+                                            <p>请以《我的梦想》为题，写一篇不少于400字的作文。</p>
+                                            <p>要求：</p>
+                                            <ol class="list-disc list-inside space-y-1">
+                                                <li>中心明确，内容具体，条理清楚，语句通顺；</li>
+                                                <li>有真情实感，能表达自己的独特感受；</li>
+                                                <li>字迹工整，书写规范，不写错别字，正确使用标点符号。</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                `
+                            },
+                            '3': {
+                                title: '初二英语单元测试',
+                                content: `
+                                    <div class="space-y-6">
+                                        <div class="text-center mb-6">
+                                            <h2 class="text-xl font-bold">初二英语单元测试</h2>
+                                            <p class="text-gray-600">时间：90分钟 &nbsp;&nbsp;&nbsp; 总分：100分</p>
+                                        </div>
+                                        
+                                        <div class="border-b border-gray-200 pb-4">
+                                            <h3 class="font-semibold text-lg mb-3">一、听力部分（共20分）</h3>
+                                            <p>（听力材料将在考试时播放）</p>
+                                            <ol class="list-decimal list-inside space-y-3">
+                                                <li>1-5 听对话，选择正确答案（每题2分）</li>
+                                                <li>6-10 听短文，判断正误（每题2分）</li>
+                                            </ol>
+                                        </div>
+                                        
+                                        <div class="border-b border-gray-200 pb-4">
+                                            <h3 class="font-semibold text-lg mb-3">二、单项选择（共15分）</h3>
+                                            <p>从A、B、C、D四个选项中，选出可以填入空白处的最佳选项。</p>
+                                            <ol class="list-decimal list-inside space-y-2">
+                                                <li>1. —______ do you usually go to school? —By bike.</li>
+                                                <li>&nbsp;&nbsp; A. What &nbsp;&nbsp; B. How &nbsp;&nbsp; C. When &nbsp;&nbsp; D. Where</li>
+                                                <li>2. She ______ her homework when her mother came in.</li>
+                                                <li>&nbsp;&nbsp; A. is doing &nbsp;&nbsp; B. does &nbsp;&nbsp; C. was doing &nbsp;&nbsp; D. did</li>
+                                                <li>...</li>
+                                            </ol>
+                                        </div>
+                                        
+                                        <div class="border-b border-gray-200 pb-4">
+                                            <h3 class="font-semibold text-lg mb-3">三、完形填空（共15分）</h3>
+                                            <p>阅读下面短文，从短文后各题所给的A、B、C和D四个选项中，选出可以填入空白处的最佳选项。</p>
+                                            <p>One day, a little girl named Lily found a wounded bird in her garden. The bird's wing was broken, and it couldn't fly. Lily felt sorry for the bird and decided to help it. She took the bird home and made a small house for it. Every day, she fed the bird and cleaned its wound. After a few weeks, the bird's wing healed, and it could fly again. Lily was very happy. She opened the window and let the bird fly away. The bird sang a beautiful song and flew into the sky. Lily learned that helping others makes us happy.</p>
+                                            <ol class="list-decimal list-inside space-y-2">
+                                                <li>1. The bird couldn't fly because ______.</li>
+                                                <li>&nbsp;&nbsp; A. it was too tired &nbsp;&nbsp; B. it was afraid &nbsp;&nbsp; C. its wing was broken &nbsp;&nbsp; D. it was hungry</li>
+                                                <li>2. Lily ______ the bird every day.</li>
+                                                <li>&nbsp;&nbsp; A. fed &nbsp;&nbsp; B. played with &nbsp;&nbsp; C. sold &nbsp;&nbsp; D. ate</li>
+                                                <li>...</li>
+                                            </ol>
+                                        </div>
+                                        
+                                        <div>
+                                            <h3 class="font-semibold text-lg mb-3">四、阅读理解（共30分）</h3>
+                                            <p>阅读下面的短文，回答问题。</p>
+                                            <p>Dear Tom,</p>
+                                            <p>I'm very excited to tell you about my summer vacation. I went to Beijing with my parents. We visited many famous places, such as the Great Wall, the Forbidden City, and the Summer Palace. The Great Wall is really amazing. It's very long and steep. We climbed a part of it and took a lot of photos. The Forbidden City is very big and beautiful. We saw many old buildings and learned a lot about Chinese history. The Summer Palace is a wonderful place to relax. We walked around the lake and enjoyed the beautiful scenery.</p>
+                                            <p>...</p>
+                                            <ol class="list-decimal list-inside space-y-2">
+                                                <li>1. Where did the writer go for summer vacation?</li>
+                                                <li>&nbsp;&nbsp; A. Shanghai &nbsp;&nbsp; B. Beijing &nbsp;&nbsp; C. Guangzhou &nbsp;&nbsp; D. Shenzhen</li>
+                                                <li>2. Which place is very long and steep?</li>
+                                                <li>&nbsp;&nbsp; A. The Forbidden City &nbsp;&nbsp; B. The Summer Palace &nbsp;&nbsp; C. The Great Wall &nbsp;&nbsp; D. The Temple of Heaven</li>
+                                                <li>...</li>
+                                            </ol>
+                                        </div>
+                                        
+                                        <div>
+                                            <h3 class="font-semibold text-lg mb-3">五、书面表达（共20分）</h3>
+                                            <p>请根据以下提示，写一篇短文介绍你的家庭。</p>
+                                            <p>提示：</p>
+                                            <ol class="list-disc list-inside space-y-1">
+                                                <li>介绍家庭成员；</li>
+                                                <li>描述他们的职业和爱好；</li>
+                                                <li>表达你对家庭的感受。</li>
+                                            </ol>
+                                            <p>要求：</p>
+                                            <ol class="list-disc list-inside space-y-1">
+                                                <li>语句通顺，意思连贯；</li>
+                                                <li>不少于80词。</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                `
+                            }
+                        };
+                        
+                        if (paperData[paperId]) {
+                            paperModalTitle.textContent = paperData[paperId].title;
+                            paperModalContent.innerHTML = paperData[paperId].content;
+                        } else {
+                            paperModalTitle.textContent = '试卷预览';
+                            paperModalContent.innerHTML = `<div class="text-center">
+                                <p class="text-lg">该试卷不存在</p>
+                            </div>`
+                        }

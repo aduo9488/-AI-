@@ -1,0 +1,480 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统设置 - H5题库管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#0FC6C2',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        info: '#86909C',
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .transition-custom {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .card-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .input-focus {
+                @apply focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all;
+            }
+            .banner-item {
+                @apply border border-gray-200 rounded-lg p-4 mb-4 transition-custom hover:border-primary hover:shadow-md;
+            }
+            .nav-tab-active {
+                @apply text-primary border-primary bg-white shadow-sm;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm z-10">
+        <div class="flex items-center justify-between px-6 py-3">
+            <div class="flex items-center space-x-4">
+                <button id="sidebar-toggle" class="p-2 rounded-md hover:bg-gray-100 transition-colors">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="flex items-center">
+                    <i class="fa fa-graduation-cap text-primary text-2xl mr-2"></i>
+                    <h1 class="text-xl font-bold text-primary">H5题库管理系统</h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button class="p-2 rounded-full hover:bg-gray-100 relative transition-colors">
+                    <i class="fa fa-bell-o text-gray-600"></i>
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
+                </button>
+                
+                <div class="relative group">
+                    <button class="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors">
+                        <img src="https://picsum.photos/32/32" alt="用户头像" class="w-8 h-8 rounded-full object-cover border-2 border-primary">
+                        <span class="text-sm font-medium hidden md:block">管理员</span>
+                        <i class="fa fa-angle-down text-gray-600 hidden md:block"></i>
+                    </button>
+                    
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right group-hover:translate-y-0 translate-y-2">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-user-o mr-2"></i>个人信息
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-cog mr-2"></i>账号设置
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-danger hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-sign-out mr-2"></i>退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 侧边栏 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md z-10 flex-shrink-0 transition-all duration-300 transform translate-x-0 lg:translate-x-0 overflow-y-auto h-[calc(100vh-64px)]">
+            <nav class="py-4">
+                <div class="px-6 mb-4">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">主导航</p>
+                </div>
+                
+                <ul class="space-y-1">
+                    <li>
+                        <a href="2-数据概览.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-dashboard w-5 h-5 mr-3"></i>
+                            <span>数据概览</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="3-角色管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-users w-5 h-5 mr-3"></i>
+                            <span>角色管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="4-用户管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-user-circle-o w-5 h-5 mr-3"></i>
+                            <span>用户管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="5-学生管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-graduation-cap w-5 h-5 mr-3"></i>
+                            <span>学生管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="6-试卷管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-file-text-o w-5 h-5 mr-3"></i>
+                            <span>试卷管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="7-题库管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-question-circle-o w-5 h-5 mr-3"></i>
+                            <span>题库管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="8-用户反馈.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-comments-o w-5 h-5 mr-3"></i>
+                            <span>用户反馈</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="px-6 my-6">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">系统设置</p>
+                </div>
+                
+                <ul class="space-y-1">
+                    <li>
+                        <a href="9-系统设置.html" class="nav-link flex items-center px-6 py-3 text-primary bg-primary/5 hover:bg-primary/10 transition-colors">
+                            <i class="fa fa-cog w-5 h-5 mr-3"></i>
+                            <span>系统设置</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="10-操作日志.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-history w-5 h-5 mr-3"></i>
+                            <span>操作日志</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
+            <!-- 页面标题 -->
+            <div class="mb-6">
+                <h2 id="page-title" class="text-2xl font-bold text-gray-800">系统设置</h2>
+                <p id="page-description" class="text-gray-500 mt-1">配置系统的各项参数和功能</p>
+            </div>
+            
+            <!-- 二级导航栏 -->
+            <div class="bg-white rounded-xl shadow-sm p-1 mb-6">
+                <div class="flex flex-wrap">
+                    <button class="system-tab nav-tab-active px-4 py-2 rounded-lg text-sm font-medium transition-custom" data-tab="banner">
+                        <i class="fa fa-image mr-2"></i>轮播图配置
+                    </button>
+                    <button class="system-tab px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-custom" data-tab="system">
+                        <i class="fa fa-info-circle mr-2"></i>系统设置
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 内容区域 -->
+            <div id="system-settings-content">
+                <!-- 轮播图配置 -->
+                <div id="banner-settings" class="system-tab-content">
+                    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-semibold text-lg">轮播图配置</h3>
+                            <span class="text-sm text-gray-500">最多可添加5张轮播图</span>
+                        </div>
+                        
+                        <div id="banner-list">
+                            <!-- 轮播图项 -->
+                            <div class="banner-item">
+                                <div class="flex flex-col md:flex-row md:items-center gap-4">
+                                    <div class="md:w-1/4">
+                                        <div class="aspect-w-16 aspect-h-9 bg-gray-100 rounded-lg overflow-hidden">
+                                            <img src="https://picsum.photos/800/400?random=1" alt="轮播图预览" class="w-full h-full object-cover">
+                                        </div>
+                                        <button class="mt-2 w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center justify-center">
+                                            <i class="fa fa-upload mr-2"></i> 更换图片
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="md:w-3/4">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">链接地址</label>
+                                                <input type="text" value="https://example.com/course/1" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">显示顺序</label>
+                                                <input type="number" value="1" min="1" max="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">是否启用</label>
+                                                <div class="mt-1 flex items-center">
+                                                    <input type="checkbox" id="enable-banner-1" checked="" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                                    <label for="enable-banner-1" class="ml-2 block text-sm text-gray-700">启用此轮播图</label>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">操作</label>
+                                                <button class="text-danger hover:text-danger/80 mt-1">
+                                                    <i class="fa fa-trash mr-1"></i> 删除
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="banner-item">
+                                <div class="flex flex-col md:flex-row md:items-center gap-4">
+                                    <div class="md:w-1/4">
+                                        <div class="aspect-w-16 aspect-h-9 bg-gray-100 rounded-lg overflow-hidden">
+                                            <img src="https://picsum.photos/800/400?random=2" alt="轮播图预览" class="w-full h-full object-cover">
+                                        </div>
+                                        <button class="mt-2 w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center justify-center">
+                                            <i class="fa fa-upload mr-2"></i> 更换图片
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="md:w-3/4">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">链接地址</label>
+                                                <input type="text" value="https://example.com/course/2" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">显示顺序</label>
+                                                <input type="number" value="2" min="1" max="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">是否启用</label>
+                                                <div class="mt-1 flex items-center">
+                                                    <input type="checkbox" id="enable-banner-2" checked="" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                                    <label for="enable-banner-2" class="ml-2 block text-sm text-gray-700">启用此轮播图</label>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">操作</label>
+                                                <button class="text-danger hover:text-danger/80 mt-1">
+                                                    <i class="fa fa-trash mr-1"></i> 删除
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <button id="add-banner" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center">
+                                <i class="fa fa-plus mr-2"></i> 添加轮播图
+                            </button>
+                        </div>
+                        
+                        <!-- 保存设置按钮 -->
+                        <div class="mt-6 flex justify-center">
+                            <button id="save-settings" class="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg flex items-center">
+                                <i class="fa fa-save mr-2"></i> 保存设置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 系统设置 -->
+                <div id="system-settings" class="system-tab-content hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="font-semibold text-lg mb-6">系统设置</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">系统名称</label>
+                                <input type="text" value="H5题库管理系统" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">系统Logo</label>
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                                        <img src="https://picsum.photos/64/64" alt="系统Logo" class="w-full h-full object-cover">
+                                    </div>
+                                    <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                                        上传新Logo
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">系统域名</label>
+                                <input type="text" value="https://example.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">联系邮箱</label>
+                                <input type="email" value="support@example.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">联系电话</label>
+                                <input type="tel" value="400-123-4567" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">备案号</label>
+                                <input type="text" value="粤ICP备12345678号" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">系统描述</label>
+                            <textarea rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">H5题库管理系统是一款专业的在线题库管理平台，提供高效的题目管理、试卷生成和考试功能。</textarea>
+                        </div>
+                        
+                        <!-- 保存设置按钮 -->
+                        <div class="mt-6 flex justify-center">
+                            <button id="save-settings" class="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg flex items-center">
+                                <i class="fa fa-save mr-2"></i> 保存设置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // 侧边栏切换
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('translate-x-0');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+        
+        // 系统设置二级导航切换
+        document.querySelectorAll('.system-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 移除所有活动状态
+                document.querySelectorAll('.system-tab').forEach(t => {
+                    t.classList.remove('nav-tab-active');
+                    t.classList.add('text-gray-600', 'hover:bg-gray-100');
+                });
+                
+                // 添加当前活动状态
+                this.classList.add('nav-tab-active');
+                this.classList.remove('text-gray-600', 'hover:bg-gray-100');
+                
+                // 显示对应内容
+                const tabContent = this.getAttribute('data-tab');
+                document.querySelectorAll('.system-tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.getElementById(`${tabContent}-settings`).classList.remove('hidden');
+                
+                // 更新页面标题和描述
+                if (tabContent === 'banner') {
+                    document.getElementById('page-title').textContent = '系统设置 - 轮播图配置';
+                    document.getElementById('page-description').textContent = '配置首页轮播图展示内容';
+                } else if (tabContent === 'system') {
+                    document.getElementById('page-title').textContent = '系统设置 - 系统设置';
+                    document.getElementById('page-description').textContent = '配置系统的基本信息和参数';
+                }
+            });
+        });
+        
+        // 添加轮播图
+        document.getElementById('add-banner').addEventListener('click', function() {
+            const bannerList = document.getElementById('banner-list');
+            const bannerCount = bannerList.querySelectorAll('.banner-item').length;
+            
+            if (bannerCount >= 5) {
+                alert('最多只能添加5张轮播图');
+                return;
+            }
+            
+            // 创建新的轮播图项
+            const newBanner = document.createElement('div');
+            newBanner.className = 'banner-item';
+            newBanner.innerHTML = `
+                <div class="flex flex-col md:flex-row md:items-center gap-4">
+                    <div class="md:w-1/4">
+                        <div class="aspect-w-16 aspect-h-9 bg-gray-100 rounded-lg overflow-hidden">
+                            <img src="https://picsum.photos/800/400?random=${bannerCount + 3}" alt="轮播图预览" class="w-full h-full object-cover">
+                        </div>
+                        <button class="mt-2 w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center justify-center">
+                            <i class="fa fa-upload mr-2"></i> 更换图片
+                        </button>
+                    </div>
+                    
+                    <div class="md:w-3/4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">链接地址</label>
+                                <input type="text" value="https://example.com/course/${bannerCount + 3}" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">显示顺序</label>
+                                <input type="number" value="${bannerCount + 3}" min="1" max="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">是否启用</label>
+                                <div class="mt-1 flex items-center">
+                                    <input type="checkbox" id="enable-banner-${bannerCount + 3}" checked class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                    <label for="enable-banner-${bannerCount + 3}" class="ml-2 block text-sm text-gray-700">启用此轮播图</label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">操作</label>
+                                <button class="text-danger hover:text-danger/80 mt-1 delete-banner">
+                                    <i class="fa fa-trash mr-1"></i> 删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 添加到列表
+            bannerList.appendChild(newBanner);
+            
+            // 为新添加的删除按钮绑定事件
+            newBanner.querySelector('.delete-banner').addEventListener('click', function() {
+                newBanner.remove();
+            });
+        });
+        
+        // 删除轮播图
+        document.querySelectorAll('.banner-item .text-danger').forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('.banner-item').remove();
+            });
+        });
+        
+        // 保存设置
+        document.getElementById('save-settings').addEventListener('click', function() {
+            // 这里可以添加保存设置的逻辑
+            alert('设置已保存！');
+        });
+    </script>
+
+</body></html>

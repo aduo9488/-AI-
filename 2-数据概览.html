@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H5题库管理系统 - 数据概览</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#0FC6C2',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        info: '#86909C',
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .transition-bg {
+                transition: background-color 0.2s ease;
+            }
+            .transition-transform {
+                transition: transform 0.2s ease;
+            }
+            .hover-scale {
+                transition: transform 0.2s ease;
+            }
+            .hover-scale:hover {
+                transform: scale(1.02);
+            }
+            .chart-container {
+                position: relative;
+                margin: auto;
+                height: 200px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm z-10">
+        <div class="flex items-center justify-between px-6 py-3">
+            <div class="flex items-center space-x-4">
+                <button id="sidebar-toggle" class="p-2 rounded-md hover:bg-gray-100 transition-colors">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="flex items-center">
+                    <i class="fa fa-graduation-cap text-primary text-2xl mr-2"></i>
+                    <h1 class="text-xl font-bold text-primary">H5题库管理系统</h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button class="p-2 rounded-full hover:bg-gray-100 relative transition-colors">
+                    <i class="fa fa-bell-o text-gray-600"></i>
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
+                </button>
+                
+                <div class="relative group">
+                    <button class="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors">
+                        <img src="https://picsum.photos/32/32" alt="用户头像" class="w-8 h-8 rounded-full object-cover border-2 border-primary">
+                        <span class="text-sm font-medium hidden md:block">管理员</span>
+                        <i class="fa fa-angle-down text-gray-600 hidden md:block"></i>
+                    </button>
+                    
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right group-hover:translate-y-0 translate-y-2">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-user-o mr-2"></i>个人信息
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-cog mr-2"></i>账号设置
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-danger hover:bg-gray-100 transition-colors">
+                            <i class="fa fa-sign-out mr-2"></i>退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 侧边栏 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md z-10 flex-shrink-0 transition-all duration-300 transform translate-x-0 lg:translate-x-0 overflow-y-auto h-[calc(100vh-64px)]">
+            <nav class="py-4">
+                <div class="px-6 mb-4">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">主导航</p>
+                </div>
+                
+                <ul class="space-y-1">
+                    <li>
+                        <a href="2-首页-数据概览.html" class="nav-link flex items-center px-6 py-3 text-primary bg-primary/5 hover:bg-primary/10 transition-colors">
+                            <i class="fa fa-dashboard w-5 h-5 mr-3"></i>
+                            <span>数据概览</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="3-角色管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-users w-5 h-5 mr-3"></i>
+                            <span>角色管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="4-用户管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-user-circle-o w-5 h-5 mr-3"></i>
+                            <span>用户管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="5-学生管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-graduation-cap w-5 h-5 mr-3"></i>
+                            <span>学生管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="6-试卷管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-file-text-o w-5 h-5 mr-3"></i>
+                            <span>试卷管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="7-题库管理.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-question-circle-o w-5 h-5 mr-3"></i>
+                            <span>题库管理</span>
+                        </a>
+                        <a href="8-用户反馈.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-primary/10 transition-colors">
+                            <i class="fa fa-file-text-o w-5 h-5 mr-3"></i>
+                            <span>用户反馈</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="px-6 my-6">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">系统设置</p>
+                </div>
+                
+                <ul class="space-y-1">
+                    <li>
+                        <a href="9-系统设置.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-cog w-5 h-5 mr-3"></i>
+                            <span>系统设置</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="10-操作日志.html" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="fa fa-history w-5 h-5 mr-3"></i>
+                            <span>操作日志</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
+            <!-- 页面标题 -->
+            <div class="mb-6">
+                <h2 id="page-title" class="text-2xl font-bold text-gray-800">数据概览</h2>
+                <p id="page-description" class="text-gray-500 mt-1">查看系统关键指标和数据统计</p>
+            </div>
+            
+            <!-- 内容区域 -->
+            <div id="content-area">
+                <!-- 数据概览页面 -->
+                <div id="dashboard-page" class="space-y-6">
+                    <!-- 用户相关维度 -->
+                    <h3 class="text-xl font-bold mb-2">用户相关维度</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- 总用户数 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">总用户数</p>
+                                    <h3 class="text-3xl font-bold mt-1">12,843</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <i class="fa fa-user-circle-o text-primary text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 新增用户数 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">新增用户数</p>
+                                    <h3 class="text-3xl font-bold mt-1">248</h3>
+                                    <p class="text-success text-sm mt-2 flex items-center">
+                                        <i class="fa fa-arrow-up mr-1"></i> 12.5% <span class="text-gray-500 ml-1">较昨日</span>
+                                    </p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
+                                    <i class="fa fa-user-plus text-secondary text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 每日活跃用户数 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">每日活跃用户数</p>
+                                    <h3 class="text-3xl font-bold mt-1">4,129</h3>
+                                    <p class="text-success text-sm mt-2 flex items-center">
+                                        <i class="fa fa-arrow-up mr-1"></i> 5.3% <span class="text-gray-500 ml-1">较昨日</span>
+                                    </p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+                                    <i class="fa fa-users text-success text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 用户趋势图表 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                        <h4 class="text-lg font-semibold mb-4">用户增长趋势</h4>
+                        <div class="chart-container">
+                            <canvas id="userGrowthChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 试卷相关维度 -->
+                    <h3 class="text-xl font-bold mb-2">试卷相关维度</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- 总试卷数 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">总试卷数</p>
+                                    <h3 class="text-3xl font-bold mt-1">3,245</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <i class="fa fa-file-text-o text-primary text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 新增试卷数 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">新增试卷数</p>
+                                    <h3 class="text-3xl font-bold mt-1">48</h3>
+                                    <p class="text-success text-sm mt-2 flex items-center">
+                                        <i class="fa fa-arrow-up mr-1"></i> 9.3% <span class="text-gray-500 ml-1">较昨日</span>
+                                    </p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
+                                    <i class="fa fa-plus-square-o text-secondary text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 试卷下载量 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">试卷下载量</p>
+                                    <h3 class="text-3xl font-bold mt-1">1,200</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+                                    <i class="fa fa-download text-success text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 试卷答题率 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">试卷答题率</p>
+                                    <h3 class="text-3xl font-bold mt-1">70%</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+                                    <i class="fa fa-pencil text-warning text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 试卷正确率 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">试卷正确率</p>
+                                    <h3 class="text-3xl font-bold mt-1">80%</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-danger/10 flex items-center justify-center">
+                                    <i class="fa fa-check text-danger text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 试卷相关图表 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                        <h4 class="text-lg font-semibold mb-4">试卷使用情况分析</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="chart-container">
+                                <canvas id="paperUsageChart"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="paperPerformanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 题库相关维度 -->
+                    <h3 class="text-xl font-bold mb-2">题库相关维度</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- 总题目数 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">总题目数</p>
+                                    <h3 class="text-3xl font-bold mt-1">5,000</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <i class="fa fa-question-circle-o text-primary text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 新增题目数 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">新增题目数</p>
+                                    <h3 class="text-3xl font-bold mt-1">50</h3>
+                                    <p class="text-success text-sm mt-2 flex items-center">
+                                        <i class="fa fa-arrow-up mr-1"></i> 10% <span class="text-gray-500 ml-1">较昨日</span>
+                                    </p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
+                                    <i class="fa fa-plus-square-o text-secondary text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 题目被使用次数 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">题目被使用次数</p>
+                                    <h3 class="text-3xl font-bold mt-1">2,500</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+                                    <i class="fa fa-repeat text-success text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 题目正确率 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">题目正确率</p>
+                                    <h3 class="text-3xl font-bold mt-1">75%</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-danger/10 flex items-center justify-center">
+                                    <i class="fa fa-check text-danger text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 不同类型题目数量分布 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">不同类型题目数量分布</p>
+                                    <h3 class="text-3xl font-bold mt-1">选择题: 2,000<br>填空题: 1,500<br>解答题: 1,500</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+                                    <i class="fa fa-list text-warning text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 题库相关图表 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                        <h4 class="text-lg font-semibold mb-4">题目类型分布与使用情况</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="chart-container">
+                                <canvas id="questionTypeChart"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="questionUsageChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 反馈相关维度 -->
+                    <h3 class="text-xl font-bold mb-2">反馈相关维度</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- 总反馈数 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">总反馈数</p>
+                                    <h3 class="text-3xl font-bold mt-1">200</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <i class="fa fa-comment text-primary text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 新增反馈数 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">新增反馈数</p>
+                                    <h3 class="text-3xl font-bold mt-1">10</h3>
+                                    <p class="text-success text-sm mt-2 flex items-center">
+                                        <i class="fa fa-arrow-up mr-1"></i> 15% <span class="text-gray-500 ml-1">较昨日</span>
+                                    </p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
+                                    <i class="fa fa-plus-square-o text-secondary text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 反馈类型分布 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">反馈类型分布</p>
+                                    <h3 class="text-3xl font-bold mt-1">功能问题: 100<br>题目错误: 50<br>其他: 50</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+                                    <i class="fa fa-tags text-success text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 已处理反馈数 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">已处理反馈数</p>
+                                    <h3 class="text-3xl font-bold mt-1">150</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-danger/10 flex items-center justify-center">
+                                    <i class="fa fa-check text-danger text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 未处理反馈数 -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">未处理反馈数</p>
+                                    <h3 class="text-3xl font-bold mt-1">50</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+                                    <i class="fa fa-exclamation text-warning text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 反馈相关图表 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 hover-scale">
+                        <h4 class="text-lg font-semibold mb-4">反馈类型与处理情况</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="chart-container">
+                                <canvas id="feedbackTypeChart"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="feedbackStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // 等待DOM加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化图表
+            initCharts();
+            
+            // 侧边栏切换
+            document.getElementById('sidebar-toggle').addEventListener('click', function() {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar.classList.contains('translate-x-0')) {
+                    sidebar.classList.remove('translate-x-0');
+                    sidebar.classList.add('-translate-x-full');
+                } else {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebar.classList.add('translate-x-0');
+                }
+            });
+            
+            // 移动端适配
+            function checkScreenSize() {
+                const sidebar = document.getElementById('sidebar');
+                if (window.innerWidth < 1024) {
+                    sidebar.classList.remove('translate-x-0');
+                    sidebar.classList.add('-translate-x-full');
+                } else {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebar.classList.add('translate-x-0');
+                }
+            }
+            
+            // 初始化时检查屏幕尺寸
+            checkScreenSize();
+            
+            // 窗口大小改变时重新检查
+            window.addEventListener('resize', checkScreenSize);
+        });
+        
+        // 初始化所有图表
+        function initCharts() {
+            // 用户增长趋势图表
+            const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+            new Chart(userGrowthCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    datasets: [{
+                        label: '总用户数',
+                        data: [9000, 10000, 11000, 11800, 12500, 12843],
+                        borderColor: '#165DFF',
+                        backgroundColor: 'rgba(22, 93, 255, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }, {
+                        label: '新增用户数',
+                        data: [1000, 1000, 800, 700, 600, 343],
+                        borderColor: '#0FC6C2',
+                        backgroundColor: 'rgba(15, 198, 194, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 试卷使用情况图表
+            const paperUsageCtx = document.getElementById('paperUsageChart').getContext('2d');
+            new Chart(paperUsageCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    datasets: [{
+                        label: '新增试卷数',
+                        data: [40, 45, 50, 42, 48, 48],
+                        backgroundColor: '#165DFF',
+                        borderRadius: 4
+                    }, {
+                        label: '试卷下载量',
+                        data: [900, 1000, 1050, 1100, 1150, 1200],
+                        backgroundColor: '#0FC6C2',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 试卷表现图表
+            const paperPerformanceCtx = document.getElementById('paperPerformanceChart').getContext('2d');
+            new Chart(paperPerformanceCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    datasets: [{
+                        label: '答题率',
+                        data: [65, 67, 68, 69, 70, 70],
+                        borderColor: '#FF7D00',
+                        backgroundColor: 'rgba(255, 125, 0, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }, {
+                        label: '正确率',
+                        data: [75, 76, 77, 78, 79, 80],
+                        borderColor: '#F53F3F',
+                        backgroundColor: 'rgba(245, 63, 63, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 60,
+                            max: 100,
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 题目类型分布图表
+            const questionTypeCtx = document.getElementById('questionTypeChart').getContext('2d');
+            new Chart(questionTypeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['选择题', '填空题', '解答题'],
+                    datasets: [{
+                        data: [2000, 1500, 1500],
+                        backgroundColor: [
+                            '#165DFF',
+                            '#0FC6C2',
+                            '#FF7D00'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+            
+            // 题目使用情况图表
+            const questionUsageCtx = document.getElementById('questionUsageChart').getContext('2d');
+            new Chart(questionUsageCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    datasets: [{
+                        label: '总题目数',
+                        data: [4000, 4200, 4500, 4700, 4900, 5000],
+                        borderColor: '#165DFF',
+                        backgroundColor: 'rgba(22, 93, 255, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }, {
+                        label: '题目被使用次数',
+                        data: [1500, 1600, 1800, 2000, 2200, 2500],
+                        borderColor: '#0FC6C2',
+                        backgroundColor: 'rgba(15, 198, 194, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 反馈类型图表
+            const feedbackTypeCtx = document.getElementById('feedbackTypeChart').getContext('2d');
+            new Chart(feedbackTypeCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['功能问题', '题目错误', '其他'],
+                    datasets: [{
+                        data: [100, 50, 50],
+                        backgroundColor: [
+                            '#165DFF',
+                            '#FF7D00',
+                            '#86909C'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+            
+            // 反馈状态图表
+            const feedbackStatusCtx = document.getElementById('feedbackStatusChart').getContext('2d');
+            new Chart(feedbackStatusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['已处理', '未处理'],
+                    datasets: [{
+                        data: [150, 50],
+                        backgroundColor: [
+                            '#00B42A',
+                            '#F53F3F'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+    </script>
+</body>
+</html>
